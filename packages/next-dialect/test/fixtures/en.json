@@ -1,0 +1,11 @@
+{
+  "plain": "Hello world",
+  "params": "Hello, {name}!",
+  "hostile": "He said: \"don't `break` \\ <this> & that\" — 100% $done",
+  "script": "close </script> tag",
+  "plural": "{count, plural, offset:1 =0 {none} =1 {only {host}} one {{host} and one guest} other {{host} and # guests}}",
+  "select": "{tier, select, pro {Pro plan} other {Free plan}}",
+  "ordinal": "{place, selectordinal, one {#st} two {#nd} few {#rd} other {#th}}",
+  "rich": "Read the <link>terms</link>, {name}.",
+  "onlyInEn": "English only"
+}

@@ -1,0 +1,69 @@
+name: Bug report
+description: Something the compiler, proxy or runtime gets wrong
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        A reproduction beats a description. If you can, link a minimal repo or
+        paste the message, the call site, and what ended up in the bundle.
+
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: Include the error or the wrong output verbatim.
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: What you expected instead
+    validations:
+      required: true
+
+  - type: textarea
+    id: repro
+    attributes:
+      label: Reproduction
+      description: |
+        A link to a minimal repo, or the smallest set of files that shows it —
+        the message from your catalog, the `t()` call, and the relevant part of
+        `next.config`.
+      render: jsx
+    validations:
+      required: true
+
+  - type: dropdown
+    id: flow
+    attributes:
+      label: Which flow
+      options:
+        - Static export (next-dialect build with output 'export')
+        - Server (next-dialect start)
+        - Dev (next dev)
+        - More than one
+    validations:
+      required: true
+
+  - type: dropdown
+    id: where
+    attributes:
+      label: Where the wrong output appears
+      options:
+        - Server-rendered HTML
+        - Client bundle / after hydration
+        - Build output or build error
+        - Not sure
+    validations:
+      required: true
+
+  - type: input
+    id: versions
+    attributes:
+      label: Versions
+      description: next-dialect, next, react, node — `npx envinfo --system --npmPackages next,next-dialect,react` covers it.
+      placeholder: next-dialect 0.2.0, next 15.1.6, react 19.0.0, node 22.11.0
+    validations:
+      required: true

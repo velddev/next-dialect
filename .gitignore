@@ -1,0 +1,42 @@
+# dependencies
+node_modules/
+
+# Next.js
+.next/
+out/
+next-env.d.ts
+.vercel/
+
+# next-dialect build output
+dist/
+.dialect/
+
+# wrangler local state
+.wrangler/
+
+# test artifacts
+test-results/
+playwright-report/
+blob-report/
+playwright/.cache/
+
+# Benchmarks. Every target's components/ and messages/ are written by its own
+# gen.mjs from benchmarks/shared, and shared/messages by gen-messages.mjs, so
+# the generators are the source and the output is not. app/ is hand-written
+# and stays tracked. harness/results*.json are the recorded measurements the
+# README quotes, so they stay too.
+benchmarks/*/components/
+benchmarks/*/messages/
+benchmarks/paraglide/paraglide/
+benchmarks/paraglide/project.inlang/
+
+# local
+.env
+.env.*
+!.env.example
+*.log
+.DS_Store
+Thumbs.db
+
+# agent/editor local state (the shared .claude/launch.json is tracked)
+.claude/settings.local.json

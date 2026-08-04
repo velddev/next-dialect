@@ -1,0 +1,286 @@
+{
+  "measuredAt": "2026-08-04T19:56:55.766Z",
+  "results": [
+    {
+      "name": "baseline",
+      "dir": "baseline",
+      "port": 4800,
+      "note": "no i18n library — the floor every other number is measured against",
+      "first": {
+        "total": 117260,
+        "js": 112148,
+        "doc": 5112
+      },
+      "lazy": {
+        "total": 1293,
+        "js": 1293,
+        "doc": 0
+      },
+      "localeSwitch": {
+        "total": 5110,
+        "js": 0,
+        "doc": 5110
+      },
+      "client": {
+        "scriptMs": 28.072,
+        "taskMs": 56.33,
+        "heap": 2827632,
+        "nodes": 574
+      },
+      "textLen": 8632,
+      "server": {
+        "chunkPath": "/_next/static/chunks/webpack-be577758ce4c9447.js",
+        "chunkCold": 4.525899999998728,
+        "chunkWarm": 2.626800000000003,
+        "pageWarm": 3.5241000000005442,
+        "pageOther": 4.346100000000661,
+        "rss": 91521024
+      },
+      "buildMs": 12320,
+      "bootMs": 1073
+    },
+    {
+      "name": "next-dialect",
+      "dir": "dialect",
+      "port": 4801,
+      "note": "compile-time inlining + bundle proxy",
+      "first": {
+        "total": 119062,
+        "js": 113916,
+        "doc": 5146
+      },
+      "lazy": {
+        "total": 1559,
+        "js": 1559,
+        "doc": 0
+      },
+      "localeSwitch": {
+        "total": 18049,
+        "js": 12838,
+        "doc": 5211
+      },
+      "client": {
+        "scriptMs": 33.805,
+        "taskMs": 60.347,
+        "heap": 2906844,
+        "nodes": 578
+      },
+      "textLen": 9523,
+      "server": {
+        "chunkPath": "/_next/static/chunks/webpack-70796cfccc254d0e.js",
+        "chunkCold": 3.965300000003481,
+        "chunkWarm": 2.2964999999967404,
+        "pageWarm": 2.6898000000001048,
+        "pageOther": 3.891799999997602,
+        "rss": 93487104
+      },
+      "buildMs": 9235,
+      "bootMs": 1555
+    },
+    {
+      "name": "next-intl",
+      "dir": "next-intl",
+      "port": 4802,
+      "note": "runtime catalog per locale",
+      "first": {
+        "total": 136982,
+        "js": 123058,
+        "doc": 13924
+      },
+      "lazy": {
+        "total": 780,
+        "js": 780,
+        "doc": 0
+      },
+      "localeSwitch": {
+        "total": 14144,
+        "js": 0,
+        "doc": 14144
+      },
+      "client": {
+        "scriptMs": 38.032000000000004,
+        "taskMs": 68.19200000000001,
+        "heap": 3183028,
+        "nodes": 583
+      },
+      "textLen": 9523,
+      "server": {
+        "chunkPath": "/_next/static/chunks/webpack-45fb2363d02f87e6.js",
+        "chunkCold": 4.286000000000058,
+        "chunkWarm": 2.844599999996717,
+        "pageWarm": 4.66639999999461,
+        "pageOther": 6.881999999997788,
+        "rss": 98828288
+      },
+      "buildMs": 9197,
+      "bootMs": 1179
+    },
+    {
+      "name": "next-intl-tuned",
+      "dir": "next-intl-tuned",
+      "port": 4806,
+      "note": "next-intl shipping only the client namespaces (best practice)",
+      "first": {
+        "total": 132472,
+        "js": 123058,
+        "doc": 9414
+      },
+      "lazy": {
+        "total": 780,
+        "js": 780,
+        "doc": 0
+      },
+      "localeSwitch": {
+        "total": 9613,
+        "js": 0,
+        "doc": 9613
+      },
+      "client": {
+        "scriptMs": 36.888999999999996,
+        "taskMs": 65.771,
+        "heap": 3100064,
+        "nodes": 583
+      },
+      "textLen": 9523,
+      "server": {
+        "chunkPath": "/_next/static/chunks/webpack-45fb2363d02f87e6.js",
+        "chunkCold": 3.4976000000024214,
+        "chunkWarm": 1.6983999999938533,
+        "pageWarm": 3.333699999988312,
+        "pageOther": 5.812000000005355,
+        "rss": 98004992
+      },
+      "buildMs": 9126,
+      "bootMs": 1118
+    },
+    {
+      "name": "next-intl-exact",
+      "dir": "next-intl-exact",
+      "port": 4807,
+      "note": "next-intl shipping only the exact keys used (theoretical floor)",
+      "first": {
+        "total": 130790,
+        "js": 123057,
+        "doc": 7733
+      },
+      "lazy": {
+        "total": 780,
+        "js": 780,
+        "doc": 0
+      },
+      "localeSwitch": {
+        "total": 7860,
+        "js": 0,
+        "doc": 7860
+      },
+      "client": {
+        "scriptMs": 37.454,
+        "taskMs": 65.574,
+        "heap": 3100512,
+        "nodes": 583
+      },
+      "textLen": 9523,
+      "server": {
+        "chunkPath": "/_next/static/chunks/webpack-45fb2363d02f87e6.js",
+        "chunkCold": 2.8643000000010943,
+        "chunkWarm": 1.8632000000070548,
+        "pageWarm": 3.44890000000305,
+        "pageOther": 4.647899999996298,
+        "rss": 97730560
+      },
+      "buildMs": 9211,
+      "bootMs": 1053
+    },
+    {
+      "name": "paraglide",
+      "dir": "paraglide",
+      "port": 4803,
+      "note": "compile-time per-message modules",
+      "skipped": "build failed",
+      "buildMs": 26374
+    },
+    {
+      "name": "react-intl",
+      "dir": "react-intl",
+      "port": 4804,
+      "note": "runtime catalog + runtime ICU parser",
+      "first": {
+        "total": 143858,
+        "js": 129431,
+        "doc": 14427
+      },
+      "lazy": {
+        "total": 797,
+        "js": 797,
+        "doc": 0
+      },
+      "localeSwitch": {
+        "total": 14665,
+        "js": 0,
+        "doc": 14665
+      },
+      "client": {
+        "scriptMs": 38.531000000000006,
+        "taskMs": 68.38,
+        "heap": 3110508,
+        "nodes": 582
+      },
+      "textLen": 9523,
+      "server": {
+        "chunkPath": "/_next/static/chunks/webpack-0282b53af52aaf56.js",
+        "chunkCold": 3.20240000000922,
+        "chunkWarm": 1.8497000000206754,
+        "pageWarm": 4.426200000016252,
+        "pageOther": 6.159100000018952,
+        "rss": 96030720
+      },
+      "buildMs": 13263,
+      "bootMs": 1071
+    },
+    {
+      "name": "i18next",
+      "dir": "i18next",
+      "port": 4805,
+      "note": "runtime catalog, namespaces",
+      "first": {
+        "total": 154545,
+        "js": 140528,
+        "doc": 14017
+      },
+      "lazy": {
+        "total": 783,
+        "js": 783,
+        "doc": 0
+      },
+      "localeSwitch": {
+        "total": 14501,
+        "js": 0,
+        "doc": 14501
+      },
+      "client": {
+        "scriptMs": 41.567,
+        "taskMs": 72.497,
+        "heap": 3474712,
+        "nodes": 581
+      },
+      "textLen": 9523,
+      "server": {
+        "chunkPath": "/_next/static/chunks/webpack-9191a80b5f0150b7.js",
+        "chunkCold": 3.5115999999979977,
+        "chunkWarm": 1.7558000000135507,
+        "pageWarm": 3.9126999999862164,
+        "pageOther": 6.5570000000006985,
+        "rss": 95952896
+      },
+      "buildMs": 13714,
+      "bootMs": 1048
+    }
+  ],
+  "scale": 1,
+  "catalog": {
+    "scale": 1,
+    "namespaces": 10,
+    "perNamespace": 60,
+    "total": 600
+  }
+}

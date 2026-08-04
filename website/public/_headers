@@ -1,0 +1,19 @@
+# Cloudflare reads this file out of the deployed assets and applies it at the
+# edge; it is never served as a page itself.
+#
+# Everything under /_next/static/ is content-hashed by the build, so a changed
+# file is a changed URL and the old one can be cached forever.
+/_next/static/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# The fonts Next self-hosts sit under /_next/static too. These do not — they
+# keep stable URLs, so they get a day rather than a year. The social card is
+# fetched by scrapers rather than browsers, and those cache it themselves.
+/icon.png
+  Cache-Control: public, max-age=86400
+
+/seo-image.png
+  Cache-Control: public, max-age=86400
+
+/background-lines.png
+  Cache-Control: public, max-age=86400

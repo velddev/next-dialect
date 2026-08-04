@@ -1,0 +1,20 @@
+{
+  "name": "bench-paraglide",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "messages": "node convert-messages.mjs",
+    "paraglide": "paraglide-js compile --project ./project.inlang --outdir ./paraglide",
+    "gen": "node gen.mjs",
+    "build": "npm run messages && npm run paraglide && npm run gen && next build",
+    "start": "next start"
+  },
+  "dependencies": {
+    "next": "15.1.6",
+    "react": "19.0.0",
+    "react-dom": "19.0.0"
+  },
+  "devDependencies": {
+    "@inlang/paraglide-js": "2.23.1"
+  }
+}

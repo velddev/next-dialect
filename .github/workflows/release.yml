@@ -1,0 +1,59 @@
+name: Release
+
+# Publishing is driven by GitHub Releases: cut a release tagged v<version>
+# and this publishes packages/next-dialect to npm.
+#
+# Authentication is npm trusted publishing (OIDC) — there is no NPM_TOKEN in
+# this repository. npm mints a short-lived credential from the `id-token`
+# below, and attaches build provenance automatically. It requires a one-time
+# setup on npmjs.com: the package's Settings -> Trusted publisher, pointing at
+# velddev/next-dialect and this workflow file (release.yml).
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    name: Publish to npm
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write # required for trusted publishing
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          registry-url: https://registry.npmjs.org
+
+      # Trusted publishing needs npm >= 11.5.1, newer than the npm bundled
+      # with any current Node release line.
+      - name: Use an npm that can do trusted publishing
+        run: npm install -g npm@latest
+
+      - run: npm ci
+
+      # A release tagged v0.3.0 that ships 0.2.0 is worse than a failed
+      # release, because the tag is what everyone will trust afterwards.
+      - name: Check the tag matches the package version
+        if: github.event_name == 'release'
+        run: |
+          tag="${GITHUB_REF_NAME#v}"
+          pkg="$(node -p "require('./packages/next-dialect/package.json').version")"
+          if [ "$tag" != "$pkg" ]; then
+            echo "::error::release tag v$tag does not match package version $pkg"
+            exit 1
+          fi
+          echo "publishing next-dialect@$pkg"
+
+      - name: Unit tests
+        run: npm run test:unit
+
+      - name: Publish
+        run: npm publish --workspace next-dialect

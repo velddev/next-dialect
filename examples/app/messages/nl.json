@@ -1,0 +1,50 @@
+{
+  "home": {
+    "title": "Lever elke taal als zijn eigen bundel",
+    "subtitle": "Strings worden tijdens de build gecompileerd naar constanten. Geen catalogus, geen lookups, geen runtime.",
+    "greeting": "Hallo, {name}!",
+    "cta": "Wissel status"
+  },
+  "status": {
+    "active": "Actief",
+    "closed": "Gesloten"
+  },
+  "nav": {
+    "switch": "View in English",
+    "dynamic": "SSR-testpagina"
+  },
+  "dynamic": {
+    "title": "Per verzoek gerenderd",
+    "renderedAt": "Deze pagina is server-side gerenderd om {time}",
+    "back": "Terug naar home"
+  },
+  "lazy": {
+    "toggle": "Laad lazy paneel",
+    "title": "Lazy geladen",
+    "body": "De strings van dit paneel leven alleen in zijn eigen lazy chunk."
+  },
+  "revalidate": {
+    "title": "Elke 5 seconden gerevalideerd",
+    "generatedAt": "Gegenereerd om {time}"
+  },
+  "cart": {
+    "items": "{count, plural, =0 {Je winkelwagen is leeg} one {# artikel in je winkelwagen} other {# artikelen in je winkelwagen}}",
+    "discount": "{pct, number, percent} korting tot {until, date, medium}"
+  },
+  "plan": {
+    "current": "{tier, select, pro {Je hebt het Pro-abonnement} team {Je hebt het Team-abonnement} other {Je hebt het gratis abonnement}}"
+  },
+  "legal": {
+    "terms": "Lees de <link>voorwaarden</link> en de <em>privacyverklaring</em>, {name}."
+  },
+  "errors": {
+    "timeout": "Het verzoek duurde te lang.",
+    "denied": "Je hebt daar geen toegang toe."
+  },
+  "complex": {
+    "meet": "{a}, {b} en {c} ontmoetten elkaar in {place}",
+    "party": "{count, plural, offset:1 =0 {Er komt niemand} =1 {Alleen {host} is er} one {{host} en één gast} other {{host} en # gasten}}",
+    "place": "{place, selectordinal, other {#e plaats}}",
+    "inbox": "{count, plural, =0 {{name} heeft geen berichten} one {{name} heeft # bericht van {sender}} other {{name} heeft # berichten van {sender}}}"
+  }
+}

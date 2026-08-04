@@ -1,0 +1,33 @@
+name: Feature request
+description: Something next-dialect should be able to do
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: The problem
+      description: What are you trying to do that you currently cannot, or can only do awkwardly?
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: What you have in mind
+      description: An API sketch is welcome, even a rough one.
+    validations:
+      required: true
+
+  - type: textarea
+    id: cost
+    attributes:
+      label: What it would cost a visitor
+      description: |
+        Optional, but the thing this project optimises for is bytes a visitor
+        downloads. If your idea implies shipping something to the browser, say
+        so — it is not disqualifying, it just has to be worth it.
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives you considered

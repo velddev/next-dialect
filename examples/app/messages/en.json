@@ -1,0 +1,53 @@
+{
+  "home": {
+    "title": "Ship every locale as its own bundle",
+    "subtitle": "Strings are compiled to constants at build time. No catalog, no lookups, no runtime.",
+    "greeting": "Hello, {name}!",
+    "cta": "Cycle status"
+  },
+  "status": {
+    "active": "Active",
+    "pending": "Pending",
+    "closed": "Closed"
+  },
+  "nav": {
+    "switch": "View in Dutch",
+    "dynamic": "SSR test page"
+  },
+  "dynamic": {
+    "title": "Rendered per request",
+    "renderedAt": "This page was server-rendered at {time}",
+    "back": "Back home"
+  },
+  "lazy": {
+    "toggle": "Load lazy panel",
+    "title": "Lazily loaded",
+    "body": "This panel's strings live only in its own lazy chunk."
+  },
+  "revalidate": {
+    "title": "Revalidated every 5 seconds",
+    "generatedAt": "Generated at {time}"
+  },
+  "cart": {
+    "items": "{count, plural, =0 {Your cart is empty} one {# item in your cart} other {# items in your cart}}",
+    "discount": "{pct, number, percent} off until {until, date, medium}"
+  },
+  "plan": {
+    "current": "{tier, select, pro {You are on the Pro plan} team {You are on the Team plan} other {You are on the Free plan}}"
+  },
+  "legal": {
+    "terms": "Read the <link>terms</link> and <em>privacy notice</em>, {name}."
+  },
+  "errors": {
+    "timeout": "The request timed out.",
+    "denied": "You do not have access to that.",
+    "unknown": "Something went wrong."
+  },
+  "complex": {
+    "meet": "{a}, {b} and {c} met at {place}",
+    "party": "{count, plural, offset:1 =0 {Nobody is coming} =1 {Only {host} is there} one {{host} and one guest} other {{host} and # guests}}",
+    "place": "{place, selectordinal, one {#st place} two {#nd place} few {#rd place} other {#th place}}",
+    "inbox": "{count, plural, =0 {{name} has no messages} one {{name} has # message from {sender}} other {{name} has # messages from {sender}}}",
+    "escapes": "He said: \"don't `break` \\ <this> & that\" — 100% $done"
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "name": "bench-dialect",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "gen": "node gen.mjs",
+    "build": "node gen.mjs && next-dialect build",
+    "start": "next-dialect start"
+  },
+  "dependencies": {
+    "next": "15.1.6",
+    "next-dialect": "file:../../packages/next-dialect",
+    "react": "19.0.0",
+    "react-dom": "19.0.0"
+  }
+}

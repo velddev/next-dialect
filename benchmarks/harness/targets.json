@@ -1,0 +1,50 @@
+[
+  {
+    "name": "baseline",
+    "dir": "baseline",
+    "port": 4800,
+    "note": "no i18n library — the floor every other number is measured against"
+  },
+  {
+    "name": "next-dialect",
+    "dir": "dialect",
+    "port": 4801,
+    "note": "compile-time inlining + bundle proxy"
+  },
+  {
+    "name": "next-intl",
+    "dir": "next-intl",
+    "port": 4802,
+    "note": "runtime catalog per locale"
+  },
+  {
+    "name": "next-intl-tuned",
+    "dir": "next-intl-tuned",
+    "port": 4806,
+    "note": "next-intl shipping only the client namespaces (best practice)"
+  },
+  {
+    "name": "next-intl-exact",
+    "dir": "next-intl-exact",
+    "port": 4807,
+    "note": "next-intl shipping only the exact keys used (theoretical floor)"
+  },
+  {
+    "name": "paraglide",
+    "dir": "paraglide",
+    "port": 4803,
+    "note": "compile-time per-message modules"
+  },
+  {
+    "name": "react-intl",
+    "dir": "react-intl",
+    "port": 4804,
+    "note": "runtime catalog + runtime ICU parser"
+  },
+  {
+    "name": "i18next",
+    "dir": "i18next",
+    "port": 4805,
+    "note": "runtime catalog, namespaces"
+  }
+]

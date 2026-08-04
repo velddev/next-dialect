@@ -1,0 +1,166 @@
+import { pageMeta } from '../../seo'
+
+export const metadata = pageMeta({
+  title: 'API | Dialect',
+  description:
+    'The whole developer-facing surface: t, t.rich, t.dynamic, t.locale, withDialect and the two CLI commands.',
+  path: '/docs/api',
+})
+
+# API
+
+The runtime surface is one import with three call forms and one property. The
+build surface is one config wrapper and two commands. That is the whole of it —
+there is no provider, no `useT`, no `getT(locale)`, and nothing to pass down a
+tree.
+
+```jsx
+import { t } from 'next-dialect'
+```
+
+`t` is a plain function rather than a hook, because the locale is invariant for
+a rendering context. It works unchanged in server components, client
+components, event handlers and helpers that are not components at all.
+
+## t(key)
+
+A key that exists in your catalog. It must be statically bounded (see below),
+and the string is inlined at the call site.
+
+```jsx
+<h1>{t('home.title')}</h1>
+```
+
+## t(key, params)
+
+Values for the message's placeholders. Simple `{name}` messages are substituted
+by a five-line formatter; anything using ICU syntax is evaluated from a
+precompiled tree against the browser's own `Intl`.
+
+```jsx
+t('home.greeting', { name })                       // "Hello, Ada!"
+t('cart.items', { count })                         // plural, with # and =0
+t('cart.discount', { pct: 0.25, until: Date.now() }) // number + date skeletons
+t('plan.current', { tier })                        // select
+```
+
+The supported message syntax is full ICU MessageFormat: plurals including
+`offset:`, selectordinal, select, `number`/`date`/`time` with skeletons, and
+tags for rich text. The parser itself runs at build time only — the browser
+receives an AST and a small walker over native `Intl`.
+
+## Template keys
+
+A template literal with a static prefix. The compiler collects every key that
+matches the pattern, emits them as an object, and indexes it with your
+expression — so the key can vary at runtime while the set of possible strings
+stays bounded by what the prefix can reach.
+
+```jsx
+const status = statuses[i]
+<p>{t(`status.${status}`)}</p>   // inlines status.* only
+```
+
+Exactly one interpolation is allowed, and the prefix cannot be empty. A suffix
+is fine — `` t(`errors.${code}.title`) `` matches keys that start with
+`errors.` and end with `.title`.
+
+## t.rich(key, params)
+
+The same message, evaluated into React children instead of a string, so tags
+inside the message call back into your components.
+
+```jsx
+t.rich('legal.terms', {
+  name,
+  link: (c) => <a href="/terms">{c}</a>,
+  em: (c) => <em>{c}</em>,
+})
+```
+
+With `"legal.terms": "Read the <link>terms</link> and <em>privacy notice</em>, {name}."`
+that produces real DOM elements, not a string of markup. The rich evaluator is
+only pulled into a bundle where `t.rich` is actually used.
+
+## t.dynamic(key, params, prefix)
+
+The escape hatch for a key that genuinely cannot be known at build time — one
+that arrives from an API, say. It inlines the messages under `prefix` into the
+chunk that calls it, and the build logs how many messages and roughly how many
+bytes that cost.
+
+```jsx
+const key = 'errors.' + codeFromServer
+<p>{t.dynamic(key, undefined, 'errors.')}</p>
+```
+
+The third argument is optional, and omitting it is a decision rather than a
+convenience: with no prefix the *entire* catalog lands in that chunk. Pass one.
+
+## t.locale
+
+The current locale, as a string. In a compiled client bundle it is a constant.
+
+```jsx
+const other = t.locale === 'en' ? 'nl' : 'en'
+<a href={`/${other}`}>{t('nav.switch')}</a>
+```
+
+## Bounded keys
+
+`t()` and `t.rich()` accept a string literal or a prefixed template literal,
+and nothing else. An unbounded expression is a compile error, not a silent
+fallback:
+
+```jsx
+t(someVariable)     // error: needs a statically bounded key
+```
+
+That is the trade the whole design rests on. A key the compiler cannot see is a
+key it cannot inline, and inlining an unknown key means shipping the catalog
+that might contain it. The error points at the two supported forms and at
+`t.dynamic`, which does exactly that — on purpose, in one place, with the cost
+printed at build time.
+
+Three more things fail the build rather than the page: a key that is missing
+from the default-locale catalog, a template pattern that matches no keys at
+all, and message text containing the compiler's sentinel character (`U+0001`),
+which would otherwise corrupt substitution.
+
+## withDialect(nextConfig, dialectConfig)
+
+```js
+import { withDialect } from 'next-dialect/config'
+
+export default withDialect(nextConfig, {
+  locales: ['en', 'nl'],
+  defaultLocale: 'en',
+})
+```
+
+Returns a Next config with the compiler front-end wired in and the settings
+published for every other part of the toolchain. Full option table in
+[Configuration](/docs/configuration).
+
+## CLI
+
+| Command | What it does |
+| --- | --- |
+| `next-dialect build` | Runs `next build`, then either forks the export into `dist/<locale>/` (when `output: 'export'`) or reports fallbacks and leaves the chunks for the server to rewrite. |
+| `next-dialect start` | Serves the build: Next plus the bundle proxy in one process, on `PORT` (default 3000). |
+
+## Server and client behaviour
+
+The same import resolves to a different implementation per target, which is why
+one function can cover all of them:
+
+| Where | What `t` is |
+| --- | --- |
+| Server components | A runtime lookup against a catalog read from disk and precompiled once per locale. Server-rendered HTML therefore always contains real strings, which is what streaming, ISR and `force-dynamic` need. |
+| Client components, production | Nothing. Every call site has been replaced by its result at build time. |
+| Client components, dev | A runtime lookup through a provider the compiler mounts, so editing a catalog hot-reloads. |
+
+The locale is bound by the `[locale]` segment. Calling `t` outside a
+locale-bound tree throws — `t used before a locale was bound` on the server,
+`t used outside a locale-bound tree` during SSR of a client component — rather
+than quietly rendering the default locale.

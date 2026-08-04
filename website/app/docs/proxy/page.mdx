@@ -1,0 +1,110 @@
+import { pageMeta } from '../../seo'
+
+export const metadata = pageMeta({
+  title: 'The bundle proxy | Dialect',
+  description:
+    'How a server deployment serves every locale from one build: token scanning, selective URL prefixing, cookie-resolved lazy chunks and a streaming HTML rewriter.',
+  path: '/docs/proxy',
+})
+
+# The bundle proxy
+
+A build leaves sentinel tokens where the messages go. Something has to put the
+strings in. On a static host that happens once, on disk. On a server it happens
+per request, and that is the proxy.
+
+The alternative — forking the whole output tree per locale — is what the static
+path has to do, and it is worth seeing why the server path does not. Duplicating
+the tree makes React, the framework and every vendor chunk locale-specific,
+even though not one of them contains a string. A visitor switching language
+would re-download the entire application.
+
+## What it does at boot
+
+The proxy scans the emitted `.js` and `.css` files once and records which of
+them actually contain message tokens. Everything else is left alone forever.
+That set is small — it is the chunks holding your components' text, not your
+dependencies — and it is the difference between a locale switch costing
+kilobytes and costing megabytes.
+
+## Two shapes of asset request
+
+```
+/<locale>/_next/static/…    entry chunks, referenced from rewritten HTML
+/_next/static/…             lazily loaded chunks, no locale in the URL
+```
+
+Entry chunks are easy: the HTML is rewritten as it is served, so their URLs can
+carry the locale. They are immutable per locale, so they get a one-year
+`immutable` cache header and a CDN can hold them forever.
+
+Lazy chunks are the interesting case. Their URLs are constructed by the webpack
+runtime in the browser, which knows nothing about locales, so the locale cannot
+be in the path. A localized lazy chunk is therefore resolved from the locale
+cookie and served with `Vary: Cookie`, so caches keep one entry per locale
+rather than serving Dutch to an English reader. A chunk that carries no tokens
+never enters this path at all — it is passed straight through to Next, with one
+URL and one cache entry for every locale.
+
+Rewritten chunks are cached in memory both raw and gzipped, keyed by locale and
+file. They are immutable for that pair, so compressing once is free after the
+first hit.
+
+## Rewriting the HTML
+
+Only asset URLs that belong to localized chunks get a locale prefix; shared
+ones are left exactly as Next emitted them. That is the same set from the boot
+scan, used a second time.
+
+The rewrite happens **as the response streams**, which is what keeps Suspense
+and PPR working — the alternative, buffering the document to rewrite it whole,
+would defeat streaming entirely. A fixed 512-byte tail is held back between
+chunks so a URL split across two writes still matches. Only successful HTML
+bodies are touched; redirects and errors pass through untouched, since they
+carry no asset URLs and re-framing a 3xx body breaks keep-alive for the next
+request on the socket.
+
+Compression is handled deliberately. The rewriter needs plaintext, so the
+request reaches Next with `Accept-Encoding` stripped and the server gzips the
+rewritten HTML itself — otherwise the locale rewrite would cost every visitor
+their compression.
+
+## Negotiating a locale
+
+An un-prefixed URL resolves in this order:
+
+1. the locale cookie, if it names a locale you ship;
+2. `Accept-Language`, matched first exactly, then by base language, unless
+   `detection.acceptLanguage` is off;
+3. the default locale.
+
+What happens next depends on `localePrefix`. With `'always'`, the visitor is
+redirected to the prefixed URL. With `'as-needed'`, the default locale is
+served at the canonical un-prefixed URL, and a request for its prefixed form is
+permanently redirected back to the short one. Either way the resolved locale is
+written back to the cookie, which is what makes lazy chunks resolvable later.
+
+Shared assets never enter negotiation — they have no locale to negotiate.
+
+## The static path
+
+`next-dialect build` with `output: 'export'` uses the same substitution code
+with no server involved. Every text file in the export is rewritten per locale
+into `dist/<locale>/`, asset URLs are prefixed wholesale, and each locale ends
+up a complete, self-contained site. The build fails rather than shipping a page
+with an unreplaced token in it.
+
+Duplication is the price of having no request-time hook. If your host can run
+JavaScript at the edge, the server path's two jobs — locale-scoped asset URLs
+and HTML rewriting — are the two things to move there instead.
+
+## Known limits
+
+- The streaming rewriter requires plaintext, so the dialect server asks Next
+  not to compress. Compression belongs to the CDN in front of it, and the
+  server gzips what it rewrites.
+- Custom servers do not run on Vercel. The build output is shaped for the edge
+  equivalent, but that wiring is not part of the package.
+- Localized chunks keep their original content hash, so their source maps drift
+  once strings are substituted. Next disables production browser source maps by
+  default, which makes this inert unless you turn them on.

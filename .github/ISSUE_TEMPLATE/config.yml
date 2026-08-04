@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Question or idea
+    url: https://github.com/velddev/next-dialect/discussions
+    about: For anything that is not a concrete bug or a specific proposal.
+  - name: Documentation
+    url: https://github.com/velddev/next-dialect#readme
+    about: Getting started, API, configuration, compiler architecture and the bundle proxy.

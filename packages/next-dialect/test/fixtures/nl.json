@@ -1,0 +1,10 @@
+{
+  "plain": "Hallo wereld",
+  "params": "Hallo, {name}!",
+  "hostile": "Hij zei: \"niet `breken` \\ <dit> & dat\" — 100% $klaar",
+  "script": "sluit </script> tag",
+  "plural": "{count, plural, offset:1 =0 {geen} =1 {alleen {host}} one {{host} en één gast} other {{host} en # gasten}}",
+  "select": "{tier, select, pro {Pro-abonnement} other {Gratis abonnement}}",
+  "ordinal": "{place, selectordinal, other {#e}}",
+  "rich": "Lees de <link>voorwaarden</link>, {name}."
+}

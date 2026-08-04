@@ -1,0 +1,208 @@
+import { pageMeta } from '../seo'
+
+export const metadata = pageMeta({
+  title: 'Getting started | Dialect',
+  description:
+    'Install next-dialect, wrap your Next config, write a message and render it. Four steps and one import.',
+  path: '/docs',
+})
+
+# Getting started
+
+Dialect compiles your translations into the chunks that use them. There is no
+catalog to fetch, no provider to mount and nothing to look up at runtime — by
+the time a page loads, the strings are already constants inside the JavaScript
+that renders them.
+
+It needs Next 15 or newer on the App Router, and React 19.
+
+## 1. Install the package
+
+```bash
+npm install next-dialect
+```
+
+Then point your build and start scripts at the CLI. `next dev` stays exactly
+as it was — dev mode skips compilation entirely and looks messages up at
+runtime, so hot reload keeps working while you edit a catalog.
+
+```json
+{
+  "scripts": {
+    "dev": "next dev",
+    "build": "next-dialect build",
+    "start": "next-dialect start"
+  }
+}
+```
+
+## 2. Set up next.config
+
+`withDialect` is the only configuration surface. It publishes your settings to
+the compiler, the runtimes, the proxy and the CLI, and installs the loader that
+rewrites `t()` call sites.
+
+```js
+// next.config.mjs
+import { withDialect } from 'next-dialect/config'
+
+export default withDialect(
+  {
+    // ...your usual Next config
+  },
+  {
+    locales: ['en', 'nl'],
+    defaultLocale: 'en',
+    messages: './messages',
+  }
+)
+```
+
+TypeScript works the same way — the wrapper returns a plain `NextConfig`:
+
+```ts
+// next.config.ts
+import type { NextConfig } from 'next'
+import { withDialect } from 'next-dialect/config'
+
+const config: NextConfig = {
+  /* ...your usual Next config */
+}
+
+export default withDialect(config, {
+  locales: ['en', 'nl'],
+  defaultLocale: 'en',
+  messages: './messages',
+})
+```
+
+Only `locales` is required; everything else has a default, and every option is
+listed in [Configuration](/docs/configuration).
+
+## 3. Create your first message
+
+One JSON file per locale, in the directory you pointed `messages` at. Nested
+objects flatten to dot-separated keys, so `home.title` below is the key you
+will pass to `t`.
+
+```json
+// messages/en.json
+{
+  "home": {
+    "title": "Ship every locale as its own bundle",
+    "greeting": "Hello, {name}!"
+  },
+  "cart": {
+    "items": "{count, plural, =0 {Your cart is empty} one {# item in your cart} other {# items in your cart}}"
+  }
+}
+```
+
+```json
+// messages/nl.json
+{
+  "home": {
+    "title": "Lever elke taal als zijn eigen bundel",
+    "greeting": "Hallo, {name}!"
+  },
+  "cart": {
+    "items": "{count, plural, =0 {Je winkelwagen is leeg} one {# artikel in je winkelwagen} other {# artikelen in je winkelwagen}}"
+  }
+}
+```
+
+A key that exists in the default locale but not in a translation is not an
+error: the default-locale string is baked into that locale's output at build
+time, and the build prints which keys fell back. Nothing resolves a fallback
+chain at runtime, because there is no chain left to resolve.
+
+## 4. Use your first message
+
+Routes live under an `app/[locale]` segment. That segment is where the locale
+gets bound — you write no i18n wiring at all, because the compiler wraps every
+`layout`, `page` and `template` underneath it.
+
+```jsx
+// app/[locale]/layout.jsx
+export function generateStaticParams() {
+  return [{ locale: 'en' }, { locale: 'nl' }]
+}
+export const dynamicParams = false
+
+export default async function RootLayout({ children, params }) {
+  const { locale } = await params
+  return (
+    <html lang={locale}>
+      <body>{children}</body>
+    </html>
+  )
+}
+```
+
+Then import `t` and call it. It is a plain function, not a hook, so the same
+import works in server components, client components, event handlers and
+ordinary helpers:
+
+```jsx
+// app/[locale]/page.jsx
+import { t } from 'next-dialect'
+
+export default function Page() {
+  return (
+    <main>
+      <h1>{t('home.title')}</h1>
+      <p>{t('home.greeting', { name: 'Ada' })}</p>
+      <p>{t('cart.items', { count: 3 })}</p>
+    </main>
+  )
+}
+```
+
+In a production client bundle those three calls compile to, respectively, a
+bare string literal, a five-line formatter call, and a walk over a precompiled
+ICU tree. The catalog itself never ships. [API](/docs/api) covers the rest of
+the surface — `t.rich`, dynamic keys and the escape hatch for keys the compiler
+cannot bound.
+
+## Run it
+
+For a static host, set `output: 'export'` and build. The export has no
+request-time hook to rewrite anything, so the CLI forks it into one complete
+site per locale:
+
+```bash
+next-dialect build      # -> dist/en/, dist/nl/
+```
+
+For a server deployment, leave `output` alone and start the dialect server. It
+is Next plus the [bundle proxy](/docs/proxy) in one process: chunks are
+rewritten per request, and only the ones that actually contain strings are
+locale-specific.
+
+```bash
+next-dialect build && next-dialect start
+```
+
+## The example app
+
+[examples/app](https://github.com/velddev/next-dialect/tree/main/examples/app)
+in the repository is a working App Router demo in English and Dutch, and it
+runs both flows from one source tree:
+
+```bash
+npm run build && npm run serve           # static -> http://localhost:4321/
+npm run build:ssr && npm run start:ssr   # server -> http://localhost:3000/en
+```
+
+It is deliberately more than a hello world. Between
+[page.jsx](https://github.com/velddev/next-dialect/blob/main/examples/app/app/%5Blocale%5D/page.jsx)
+and
+[Demo.jsx](https://github.com/velddev/next-dialect/blob/main/examples/app/components/Demo.jsx)
+it exercises interpolation, template-literal keys, plurals with `=0` and `#`,
+number and date skeletons, select, offset plurals, ordinals, nested arguments,
+rich text with tag callbacks, `t.dynamic` bounded to a namespace, a lazily
+loaded panel that carries its own strings, and a per-request page under
+`force-dynamic`. The messages behind all of it are in
+[messages/en.json](https://github.com/velddev/next-dialect/blob/main/examples/app/messages/en.json)
+— including a deliberately hostile string of quotes, backticks and angle
+brackets, to prove the escaping holds.

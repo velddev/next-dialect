@@ -1,0 +1,137 @@
+import { pageMeta } from '../../seo'
+
+export const metadata = pageMeta({
+  title: 'Compiler architecture | Dialect',
+  description:
+    'How a t() call becomes a constant: two front-ends, one transform, sentinel tokens, and per-locale substitution after the bundle is built.',
+  path: '/docs/compiler',
+})
+
+# Compiler architecture
+
+The whole design turns on one decision: a message lookup is a build-time
+operation, not a runtime one. Everything below follows from having to make that
+true without giving up ICU, lazy chunks, streaming or hot reload.
+
+## Two front-ends, one transform
+
+The transform lives in a single module and knows nothing about Next beyond the
+`[locale]` segment convention. Two front-ends feed it:
+
+- the **loader**, an `enforce: 'pre'` webpack loader that runs on your source
+  before Next's own pipeline, so SWC still does the real compile;
+- the **Babel plugin**, the same transform exported for projects already
+  running Babel.
+
+The loader bails out immediately on any file that neither mentions
+`next-dialect` nor sits at a `[locale]` segment boundary, so the extra parse
+lands on a handful of modules rather than the whole app.
+
+Which layer a module belongs to decides which half of the transform runs.
+Webpack tells the loader: `app-pages-browser` is the browser bundle, `rsc` and
+`ssr` are server layers.
+
+## The client half: call sites become constants
+
+In a production browser bundle every call site is rewritten. The compiler picks
+the cheapest form the message allows, which is why a static string costs
+nothing at all:
+
+| Call | Compiles to |
+| --- | --- |
+| static message | a bare string literal |
+| `{arg}` message | `__fmt(token, params)` — a five-line replace |
+| ICU message | `__icu(token, params, locale)`, the token a precompiled AST |
+| `t.rich(…)` | `__icuRich(…)`, the same AST evaluated into React children |
+| `` t(`status.${x}`) `` | an object literal holding only `status.*`, indexed by `x` |
+| `t.dynamic(k, p, 'ns.')` | an object literal of that namespace, with the cost logged |
+| `t.locale` | a per-locale string constant |
+| `t(someExpr)` | **a compile error** |
+
+A component and what is left of it, with the tokens already resolved for one
+locale:
+
+```jsx
+// what you wrote
+<h1>{t('home.title')}</h1>
+<p>{t('home.greeting', { name })}</p>
+<p>{t('cart.items', { count })}</p>
+
+// what the nl bundle contains
+<h1>{'Lever elke taal als zijn eigen bundel'}</h1>
+<p>{__fmt('Hallo, {name}!', { name })}</p>
+<p>{__icu('[{"type":6,"value":"count","options":{...}}]', { count }, 'nl')}</p>
+```
+
+The last row of the table is the load-bearing one. An unbounded key cannot be
+inlined, and inlining an unknown key means shipping whatever catalog holds it — so
+the compiler refuses, and points at the two bounded forms and at `t.dynamic`,
+which does exactly that on purpose and prints how many bytes it cost.
+
+## The server half: binding the locale
+
+Server-rendered HTML has to contain real strings for streaming, ISR and
+`force-dynamic` to work, so `t` stays a runtime lookup on the server. What the
+compiler does there instead is bind the request locale.
+
+Every `layout`, `page` and `template` under the `[locale]` segment is wrapped
+in a small async entry that awaits `params`, binds the locale and renders the
+original component. Every segment entry does its own binding, because segments
+render independently — a page can execute before its layout — so relying on the
+layout alone would leave the page unbound. Only the layout additionally mounts
+the client provider that carries the locale into the client tree.
+
+The wrapper is injected even into files that never import `t` themselves. It is
+the segment boundary that matters, not the imports.
+
+## Sentinel tokens
+
+The compiler cannot write the final string at call-site rewrite time, because
+one build serves every locale. It writes a sentinel instead: the key, wrapped
+in `U+0001` on both sides. Whatever consumes the build later replaces those
+tokens with one locale's content.
+
+Substitution has exactly one implementation, shared by the static fork and the
+[bundle proxy](/docs/proxy), and it has to survive minification: a minifier
+re-emits the control character as an escape sequence, so the matcher accepts
+the raw character and both textual spellings. Escaping is equally paranoid —
+the replacement is escaped so it stays valid inside double-quoted,
+single-quoted and template-literal contexts alike, and a literal `<` is escaped
+along with them, so a message can never open a tag from inside an inline
+script. HTML contexts get HTML escaping instead, and reject ICU tokens
+outright — an AST has no business in a text node.
+
+If message text itself contained the sentinel, substitution would match
+translator content and corrupt the bundle. That is checked when catalogs load,
+and it fails the build.
+
+## Catalogs and fallbacks
+
+Catalogs are read once, flattened from nested JSON to dot-keys, and resolved
+against the default locale so that a key missing from a translation already
+holds the default string before compilation starts. No fallback logic exists at
+runtime, because no fallback is left to resolve.
+
+Resolving fallbacks silently would make missing translations invisible, so the
+build reports them: how many keys fell back per locale, and the first few by
+name.
+
+## ICU
+
+Message analysis sorts every message into one of three kinds — `static` (pure
+text), `params` (only simple `{arg}` substitutions) or `icu` (anything needing
+plural, select, ordinal, number, date, time or tags). The kind decides which
+runtime the call site gets, and most messages need none.
+
+The formatjs parser runs at build time only. What reaches the browser for an
+ICU message is a compact AST plus a small walker over native `Intl` — plural
+rules, number and date formatting all come from the platform. A rich-text
+message is the same AST, evaluated into React children instead of a string, and
+that evaluator only enters a bundle where `t.rich` is actually used.
+
+## Development mode
+
+None of this runs in dev. Call-site compilation is skipped entirely, `t`
+becomes a runtime lookup, and the provider carries the precompiled catalog into
+the client tree so editing a JSON file hot-reloads like any other change. The
+evaluator is the same one production uses, so ICU behaves identically in both.

@@ -1,0 +1,72 @@
+{
+  "name": "next-dialect",
+  "version": "0.2.0",
+  "description": "Zero-overhead i18n for Next.js: messages compile to constants inside the chunks that use them. No client catalog, no runtime lookups, no fallback chains.",
+  "keywords": [
+    "nextjs",
+    "next",
+    "i18n",
+    "internationalization",
+    "localization",
+    "l10n",
+    "icu",
+    "messageformat",
+    "react",
+    "app-router",
+    "react-server-components",
+    "compiler",
+    "zero-runtime"
+  ],
+  "license": "MIT",
+  "author": "Veld Labs LLC",
+  "homepage": "https://github.com/velddev/next-dialect#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/velddev/next-dialect.git",
+    "directory": "packages/next-dialect"
+  },
+  "bugs": {
+    "url": "https://github.com/velddev/next-dialect/issues"
+  },
+  "type": "module",
+  "engines": {
+    "node": ">=18.18"
+  },
+  "files": [
+    "bin",
+    "src",
+    "README.md",
+    "LICENSE.md"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "bin": {
+    "next-dialect": "./bin/next-dialect.mjs"
+  },
+  "scripts": {
+    "test": "node --test test/compiler.test.mjs"
+  },
+  "exports": {
+    ".": {
+      "react-server": "./src/runtime/t.server.js",
+      "default": "./src/runtime/t.client.js"
+    },
+    "./config": "./src/config.mjs",
+    "./internal": "./src/runtime/internal.server.js",
+    "./format": "./src/runtime/format.js",
+    "./rich": "./src/runtime/rich.js",
+    "./babel": "./src/babel-plugin.cjs",
+    "./loader": "./src/loader.cjs",
+    "./proxy": "./src/proxy.mjs",
+    "./postbuild": "./src/postbuild.mjs",
+    "./server": "./src/server.mjs"
+  },
+  "dependencies": {
+    "@formatjs/icu-messageformat-parser": "^2.9.0"
+  },
+  "peerDependencies": {
+    "next": ">=15",
+    "react": ">=19"
+  }
+}

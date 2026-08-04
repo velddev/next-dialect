@@ -1,0 +1,258 @@
+@import 'tailwindcss' source(none);
+@source '../app';
+/* The MDX element map lives at the project root, outside app/. */
+@source '../mdx-components.js';
+
+@theme {
+  --color-paper: #faf6f0;
+  --color-ink: #322e3c;
+  --color-muted: #7a7594;
+  --font-display: var(--font-prata), Georgia, serif;
+  --font-sans: var(--font-lato), 'Lato', -apple-system, 'Segoe UI', system-ui, sans-serif;
+}
+
+/* Everything that has to flip for dark mode lives here as a variable, so the
+   markup never needs a dark: variant. */
+:root {
+  color-scheme: light dark;
+  /* The ruling: a 1x24 tile with one line on its last row. */
+  --rule: url('/background-lines.png');
+  --panel-tint: rgba(50, 46, 60, 0.04);
+  --panel-line-a: rgba(50, 46, 60, 0.11);
+  --panel-line-b: rgba(50, 46, 60, 0.09);
+  --panel-line-c: rgba(50, 46, 60, 0.07);
+  /* Buttons need their own, much stronger values: the panel alphas are tuned
+     for a large area the eye can integrate over, and read as nothing across
+     118x48px. */
+  --scribble-tint: rgba(50, 46, 60, 0.08);
+  --scribble-line-a: rgba(50, 46, 60, 0.32);
+  --scribble-line-b: rgba(50, 46, 60, 0.24);
+  --scribble-line-c: rgba(50, 46, 60, 0.18);
+  /* Code tokens: kept inside the paper palette so the figures stay part of
+     the page rather than becoming a bright IDE window. */
+  --tok-kw: #6a4bc4;
+  --tok-str: #9a5238;
+  --tok-tag: #3f6d63;
+  --tok-com: #8b8598;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-paper: #050506;
+    --color-ink: #f1edff;
+    --color-muted: #8e88a8;
+    /* The tile's line is a 10%-alpha blue-violet — invisible on a dark
+       background — so dark mode redraws the identical 24px rhythm (line on
+       the last row) in a light tone instead of shipping a second image. */
+    --rule: repeating-linear-gradient(
+      to bottom,
+      transparent 0,
+      transparent 23px,
+      rgba(163, 152, 214, 0.13) 23px,
+      rgba(163, 152, 214, 0.13) 24px
+    );
+    --panel-tint: rgba(241, 237, 255, 0.04);
+    --panel-line-a: rgba(241, 237, 255, 0.11);
+    --panel-line-b: rgba(241, 237, 255, 0.09);
+    --panel-line-c: rgba(241, 237, 255, 0.07);
+    --scribble-tint: rgba(241, 237, 255, 0.08);
+    --scribble-line-a: rgba(241, 237, 255, 0.34);
+    --scribble-line-b: rgba(241, 237, 255, 0.26);
+    --scribble-line-c: rgba(241, 237, 255, 0.19);
+    --tok-kw: #b9a6ff;
+    --tok-str: #e5a184;
+    --tok-tag: #86c8b8;
+    --tok-com: #7d7691;
+  }
+}
+
+body {
+  background-image: var(--rule);
+  background-repeat: repeat;
+}
+
+/* Layout invariant: the page sits on a 24px baseline grid (the ruling
+   tile is 1x24). Keep every font-size/line-height pair and every vertical
+   margin a multiple of 24 — leading-6 (24px), leading-12 (48px), mt-6/12/18/24. */
+
+@layer components {
+  /* Hand-hatched code panel: three hatch layers at slightly mismatched
+     angles/periods so the pattern interferes irregularly, plus an offset
+     "second impression" like misregistered print. */
+  .code-panel {
+    background-color: var(--panel-tint);
+    /* Hand-cut edge: irregular polygon so the hatch strokes stop unevenly,
+       as if drawn one by one and not quite reaching a ruled frame. */
+    clip-path: polygon(0.0% 2.1px, 0.4% 2.4px, 1.0% 5.8px, 1.7% 6.9px, 2.5% 1.7px, 3.0% 2.8px, 3.6% 2.9px, 4.2% 1.4px, 5.0% 1.6px, 5.8% 1.2px, 6.6% 2.1px, 7.2% 4.2px, 7.9% 0.3px, 8.5% 6px, 9.0% 3.1px, 9.7% 3.9px, 10.3% 7.8px, 10.9% 1.9px, 11.5% 6px, 11.9% 1.7px, 12.6% 2.6px, 13.3% 1.3px, 14.0% 3.8px, 14.6% 2.2px, 15.2% 1.9px, 15.8% 2.5px, 16.4% 6.4px, 17.0% 2.6px, 17.5% 4.1px, 18.2% 5.6px, 19.0% 0.3px, 19.5% 1.3px, 20.2% 0px, 20.9% 1.2px, 21.5% 0.3px, 22.3% 1.8px, 22.7% 3.6px, 23.2% 5.3px, 24.1% 6.7px, 24.7% 3.1px, 25.6% 1.1px, 26.4% 1.3px, 26.9% 1.7px, 27.6% 3.5px, 28.3% 3.4px, 28.8% 2.4px, 29.7% 2.8px, 30.4% 1.3px, 30.9% 0.1px, 31.5% 2.6px, 32.3% 5.4px, 33.1% 5.1px, 33.8% 7.5px, 34.4% 4.8px, 35.1% 2.6px, 36.0% 1px, 36.7% 7.1px, 37.5% 6.7px, 38.1% 6px, 38.6% 7.1px, 39.2% 4.6px, 39.7% 4.2px, 40.6% 0.8px, 41.3% 7.8px, 41.8% 2.3px, 42.5% 3.1px, 42.9% 6.6px, 43.6% 0.6px, 44.1% 4px, 44.8% 7.5px, 45.4% 0.7px, 46.3% 8.1px, 46.9% 1.2px, 47.5% 3.8px, 47.9% 0.5px, 48.7% 2.7px, 49.5% 1.9px, 50.4% 0.2px, 51.1% 0.1px, 51.6% 0.4px, 52.1% 0.9px, 52.8% 2.2px, 53.4% 6.9px, 54.1% 3.4px, 54.6% 1.1px, 55.0% 0.6px, 55.6% 5.9px, 56.2% 2.2px, 57.1% 4.5px, 57.7% 7.2px, 58.4% 6.5px, 59.3% 0.9px, 60.1% 7.4px, 60.9% 0.1px, 61.5% 1.4px, 62.2% 2.1px, 63.0% 5.4px, 63.6% 1.4px, 64.1% 2.5px, 64.6% 2.6px, 65.3% 3.2px, 66.1% 1.7px, 67.0% 6.2px, 67.9% 1.1px, 68.6% 3.7px, 69.2% 3.8px, 69.8% 3.5px, 70.2% 0.4px, 70.7% 7.2px, 71.6% 7.1px, 72.1% 2.1px, 72.7% 2.4px, 73.4% 1.5px, 73.8% 5.1px, 74.7% 2.2px, 75.1% 2px, 75.8% 0.4px, 76.2% 0.9px, 76.9% 2px, 77.6% 3.7px, 78.2% 8.1px, 78.7% 1.3px, 79.3% 0.3px, 80.0% 5.6px, 80.6% 5.5px, 81.0% 6.1px, 81.8% 7.4px, 82.2% 5.8px, 82.8% 1.7px, 83.2% 2.8px, 83.9% 0.1px, 84.6% 5.4px, 85.2% 3.5px, 85.7% 4.5px, 86.2% 4.3px, 86.8% 4.3px, 87.6% 2.2px, 88.5% 3.6px, 89.1% 3.5px, 89.8% 4px, 90.6% 1.6px, 91.3% 5.2px, 91.8% 8px, 92.6% 1.7px, 93.0% 3px, 93.9% 5.4px, 94.7% 0.1px, 95.6% 0.9px, 96.2% 1px, 96.8% 4px, 97.7% 6.8px, 98.2% 3.7px, 98.7% 0.4px, 99.1% 5.4px, 99.9% 7.9px, calc(100% - 3.7px) 2.0%, calc(100% - 1px) 3.1%, calc(100% - 6.1px) 4.3%, calc(100% - 1.1px) 5.2%, calc(100% - 7.7px) 6.4%, calc(100% - 7.5px) 7.3%, calc(100% - 1.5px) 8.2%, calc(100% - 6.6px) 9.5%, calc(100% - 1.5px) 10.4%, calc(100% - 0.1px) 11.6%, calc(100% - 3.1px) 12.4%, calc(100% - 3.1px) 13.4%, calc(100% - 2.6px) 14.2%, calc(100% - 0.2px) 14.9%, calc(100% - 1.3px) 15.6%, calc(100% - 4.9px) 16.5%, calc(100% - 5.2px) 17.8%, calc(100% - 2px) 18.7%, calc(100% - 4.8px) 19.7%, calc(100% - 5.8px) 21.0%, calc(100% - 0.8px) 22.3%, calc(100% - 2px) 23.3%, calc(100% - 5.3px) 24.1%, calc(100% - 8.5px) 24.9%, calc(100% - 4.2px) 25.9%, calc(100% - 0.2px) 27.2%, calc(100% - 1.2px) 28.0%, calc(100% - 3.1px) 28.9%, calc(100% - 2.9px) 30.1%, calc(100% - 8.7px) 31.2%, calc(100% - 4.3px) 32.4%, calc(100% - 0.9px) 33.1%, calc(100% - 3.1px) 34.1%, calc(100% - 4.2px) 34.8%, calc(100% - 1.8px) 35.5%, calc(100% - 6.4px) 36.6%, calc(100% - 1.6px) 37.8%, calc(100% - 5px) 39.1%, calc(100% - 0.1px) 40.2%, calc(100% - 2.4px) 41.1%, calc(100% - 1.4px) 42.1%, calc(100% - 1.9px) 43.1%, calc(100% - 5.2px) 44.4%, calc(100% - 5.8px) 45.3%, calc(100% - 1.7px) 46.0%, calc(100% - 5px) 47.1%, calc(100% - 1.1px) 48.4%, calc(100% - 5.3px) 49.5%, calc(100% - 1.3px) 50.2%, calc(100% - 4.2px) 51.1%, calc(100% - 3.7px) 52.1%, calc(100% - 2.6px) 53.4%, calc(100% - 5.8px) 54.5%, calc(100% - 4px) 55.3%, calc(100% - 9px) 56.7%, calc(100% - 0.9px) 57.8%, calc(100% - 10.4px) 58.5%, calc(100% - 1.6px) 59.5%, calc(100% - 1.1px) 60.5%, calc(100% - 4.5px) 61.4%, calc(100% - 2.3px) 62.4%, calc(100% - 0.7px) 63.1%, calc(100% - 4.6px) 64.0%, calc(100% - 8.9px) 65.1%, calc(100% - 3.6px) 65.8%, calc(100% - 1px) 66.8%, calc(100% - 6.6px) 67.9%, calc(100% - 1px) 68.9%, calc(100% - 8.5px) 70.2%, calc(100% - 1.5px) 71.3%, calc(100% - 5.8px) 72.2%, calc(100% - 1.9px) 73.1%, calc(100% - 1.3px) 74.3%, calc(100% - 2.9px) 75.6%, calc(100% - 3.3px) 76.6%, calc(100% - 2.3px) 77.6%, calc(100% - 4.1px) 79.0%, calc(100% - 4.2px) 79.8%, calc(100% - 4.7px) 80.6%, calc(100% - 2.9px) 81.5%, calc(100% - 2.2px) 82.4%, calc(100% - 2px) 83.7%, calc(100% - 2.7px) 84.8%, calc(100% - 2.5px) 86.1%, calc(100% - 10.2px) 87.4%, calc(100% - 8.4px) 88.6%, calc(100% - 2.9px) 89.6%, calc(100% - 1.4px) 90.9%, calc(100% - 6.8px) 91.8%, calc(100% - 1.8px) 92.9%, calc(100% - 2.5px) 94.0%, calc(100% - 0.1px) 95.2%, calc(100% - 3.4px) 96.0%, calc(100% - 4.2px) 97.1%, calc(100% - 7.3px) 98.3%, calc(100% - 5.3px) 99.7%, 100.0% calc(100% - 1.1px), 99.4% calc(100% - 0.8px), 98.5% calc(100% - 1.6px), 97.9% calc(100% - 3.9px), 97.1% calc(100% - 6.2px), 96.5% calc(100% - 1.9px), 95.6% calc(100% - 5px), 95.0% calc(100% - 3.8px), 94.4% calc(100% - 6.8px), 93.7% calc(100% - 3.6px), 93.1% calc(100% - 2.3px), 92.7% calc(100% - 0.4px), 91.9% calc(100% - 7.7px), 91.4% calc(100% - 2.1px), 91.0% calc(100% - 0.4px), 90.4% calc(100% - 3.3px), 89.9% calc(100% - 4.3px), 89.5% calc(100% - 1.7px), 88.6% calc(100% - 6px), 87.8% calc(100% - 5.8px), 87.2% calc(100% - 1.7px), 86.6% calc(100% - 4.1px), 86.0% calc(100% - 2.6px), 85.3% calc(100% - 7.1px), 84.9% calc(100% - 2px), 84.4% calc(100% - 3.3px), 83.7% calc(100% - 2.3px), 83.0% calc(100% - 5.1px), 82.3% calc(100% - 2.9px), 81.9% calc(100% - 4.6px), 81.1% calc(100% - 0.4px), 80.5% calc(100% - 4.5px), 80.0% calc(100% - 1.3px), 79.5% calc(100% - 0.7px), 78.6% calc(100% - 4px), 78.2% calc(100% - 7.7px), 77.7% calc(100% - 2.8px), 77.0% calc(100% - 1.1px), 76.2% calc(100% - 8.1px), 75.5% calc(100% - 3.7px), 75.0% calc(100% - 3px), 74.6% calc(100% - 5.3px), 74.1% calc(100% - 3.4px), 73.4% calc(100% - 0.9px), 72.9% calc(100% - 2.5px), 72.1% calc(100% - 5.4px), 71.5% calc(100% - 3.2px), 70.9% calc(100% - 6.3px), 70.3% calc(100% - 1px), 69.5% calc(100% - 5.8px), 69.0% calc(100% - 7.8px), 68.2% calc(100% - 8.6px), 67.7% calc(100% - 2.1px), 67.1% calc(100% - 2.8px), 66.4% calc(100% - 2.2px), 65.6% calc(100% - 4.5px), 64.9% calc(100% - 1.9px), 64.2% calc(100% - 4.7px), 63.4% calc(100% - 8.3px), 62.6% calc(100% - 2.9px), 61.7% calc(100% - 1.4px), 61.2% calc(100% - 1.7px), 60.6% calc(100% - 1.9px), 59.9% calc(100% - 7px), 59.4% calc(100% - 0.5px), 58.6% calc(100% - 1.3px), 57.8% calc(100% - 8.4px), 57.4% calc(100% - 4.5px), 56.6% calc(100% - 3.3px), 56.0% calc(100% - 0.8px), 55.5% calc(100% - 3.8px), 54.7% calc(100% - 0.5px), 54.2% calc(100% - 7.5px), 53.5% calc(100% - 1.5px), 52.9% calc(100% - 1.8px), 52.4% calc(100% - 4.9px), 52.0% calc(100% - 1.3px), 51.5% calc(100% - 5.3px), 50.9% calc(100% - 2.7px), 50.0% calc(100% - 4.4px), 49.3% calc(100% - 2.9px), 48.6% calc(100% - 0.6px), 48.1% calc(100% - 1px), 47.4% calc(100% - 4.9px), 46.8% calc(100% - 4.8px), 46.2% calc(100% - 2px), 45.7% calc(100% - 4px), 45.2% calc(100% - 5.4px), 44.5% calc(100% - 5.6px), 44.0% calc(100% - 0.4px), 43.3% calc(100% - 4.3px), 42.5% calc(100% - 7.7px), 42.0% calc(100% - 1.2px), 41.2% calc(100% - 1.2px), 40.4% calc(100% - 1.6px), 39.6% calc(100% - 2.7px), 38.9% calc(100% - 2.8px), 38.5% calc(100% - 2.5px), 38.1% calc(100% - 2.2px), 37.4% calc(100% - 6.3px), 36.6% calc(100% - 5px), 35.7% calc(100% - 3.6px), 34.9% calc(100% - 5.7px), 34.0% calc(100% - 0.3px), 33.5% calc(100% - 3.4px), 32.7% calc(100% - 7.5px), 32.0% calc(100% - 1.9px), 31.2% calc(100% - 4.1px), 30.6% calc(100% - 4.2px), 29.8% calc(100% - 3px), 29.4% calc(100% - 3.4px), 28.7% calc(100% - 5.6px), 27.8% calc(100% - 2.1px), 26.9% calc(100% - 2.6px), 26.1% calc(100% - 6.3px), 25.7% calc(100% - 3px), 25.1% calc(100% - 1.7px), 24.3% calc(100% - 4.2px), 23.8% calc(100% - 4.8px), 23.2% calc(100% - 8.1px), 22.5% calc(100% - 2.4px), 21.9% calc(100% - 2.1px), 21.2% calc(100% - 2px), 20.7% calc(100% - 4.1px), 19.9% calc(100% - 2.4px), 19.4% calc(100% - 1.4px), 19.0% calc(100% - 6.4px), 18.1% calc(100% - 7px), 17.6% calc(100% - 1.7px), 17.0% calc(100% - 0.4px), 16.4% calc(100% - 8.6px), 15.6% calc(100% - 7.8px), 15.1% calc(100% - 0.7px), 14.5% calc(100% - 1.7px), 13.6% calc(100% - 4.7px), 13.0% calc(100% - 5.6px), 12.4% calc(100% - 3.7px), 11.6% calc(100% - 3.4px), 10.9% calc(100% - 6.8px), 10.5% calc(100% - 3.1px), 9.7% calc(100% - 2.6px), 8.8% calc(100% - 2.6px), 8.0% calc(100% - 1px), 7.4% calc(100% - 7.4px), 6.6% calc(100% - 0.1px), 5.7% calc(100% - 1.7px), 5.0% calc(100% - 1.2px), 4.4% calc(100% - 1.4px), 3.8% calc(100% - 2px), 3.1% calc(100% - 2.2px), 2.5% calc(100% - 1.4px), 1.9% calc(100% - 2.8px), 1.1% calc(100% - 2.7px), 0.2% calc(100% - 7.2px), 4px 98.0%, 1px 97.1%, 1.6px 95.7%, 0.3px 94.9%, 3.4px 93.8%, 6.1px 92.6%, 3.1px 91.5%, 5.7px 90.2%, 2.9px 88.9%, 1.6px 87.7%, 2.3px 86.9%, 1.8px 85.8%, 2.8px 84.7%, 4px 83.7%, 5.2px 83.0%, 2.2px 81.8%, 5.6px 81.0%, 8.1px 80.1%, 1.2px 79.3%, 8.6px 78.3%, 8.9px 77.0%, 2.4px 76.1%, 9px 74.8%, 0.4px 74.1%, 2.2px 73.3%, 6.9px 72.3%, 3.7px 71.5%, 5.9px 70.4%, 2.2px 69.6%, 2.3px 68.3%, 1.3px 67.4%, 5.1px 66.2%, 2.4px 65.0%, 2.4px 63.8%, 9.7px 62.8%, 2.1px 61.5%, 6.5px 60.7%, 0.2px 59.4%, 9.7px 58.0%, 5.5px 57.1%, 2px 55.9%, 4.2px 55.0%, 4.7px 53.7%, 3.1px 53.0%, 10px 52.2%, 6.8px 51.3%, 2.5px 49.9%, 3.3px 48.6%, 9px 47.2%, 5.5px 46.4%, 1.6px 45.3%, 2.6px 44.4%, 0.5px 43.3%, 7.5px 42.3%, 7.5px 41.0%, 2.8px 40.2%, 9.4px 39.1%, 1.4px 38.1%, 9.8px 37.1%, 0.8px 35.8%, 0.7px 34.4%, 0.8px 33.6%, 5.5px 32.3%, 1.7px 31.0%, 2.6px 30.2%, 0.7px 29.4%, 5.4px 28.1%, 0.4px 27.3%, 1.6px 26.0%, 8.7px 25.3%, 0.7px 24.1%, 1.6px 23.3%, 2.1px 22.0%, 7.8px 20.7%, 5.2px 19.5%, 5.4px 18.3%, 3.8px 17.3%, 3.7px 16.3%, 9.5px 14.9%, 9.3px 13.8%, 7.2px 12.7%, 2.3px 11.3%, 5.1px 10.2%, 0.4px 9.5%, 8.3px 8.8%, 6.3px 7.8%, 1.5px 6.5%, 8.4px 5.5%, 6.1px 4.5%, 2.9px 3.5%, 2.4px 2.4%);
+    background-image: repeating-linear-gradient(
+        -45deg,
+        var(--panel-line-a) 0,
+        var(--panel-line-a) 1px,
+        transparent 1px,
+        transparent 5px
+      ),
+      repeating-linear-gradient(
+        -46.5deg,
+        var(--panel-line-b) 0,
+        var(--panel-line-b) 1px,
+        transparent 1px,
+        transparent 8px
+      ),
+      repeating-linear-gradient(
+        -42.5deg,
+        var(--panel-line-c) 0,
+        var(--panel-line-c) 1px,
+        transparent 1px,
+        transparent 13px
+      );
+  }
+
+  /* Buttons that get scribbled in on hover: the same three-layer diagonal
+     hatch as the code panels, revealed behind the label with a ragged
+     leading edge — as if filled in by hand, left to right.
+     Both polygons carry the same point count so clip-path can transition. */
+  .scribble {
+    position: relative;
+    isolation: isolate;
+    transition: border-color 420ms cubic-bezier(0.22, 0.7, 0.3, 1);
+  }
+
+  /* The ruled box firms up as the fill arrives, so the state change is
+     legible even before the hatch registers. */
+  .scribble:hover,
+  .scribble:focus-visible {
+    border-color: color-mix(in oklab, var(--color-ink) 60%, transparent);
+  }
+
+  .scribble-fill {
+    position: absolute;
+    /* The fill overshoots the ruled border by a few pixels, unevenly, and
+       sits a fraction askew — as if the pen ran past the line. Absolutely
+       positioned, so none of this disturbs the baseline grid. */
+    inset: -5px -7px -4px -5px;
+    transform: rotate(-0.4deg);
+    z-index: -1;
+    /* scribble-edge: regenerate with website/scripts/gen-scribble-edge.mjs */
+    clip-path: polygon(0.0% 4.7px, 2.8% 1.2px, 4.4% 0.9px, 6.8% 4.4px, 9.3% 1.2px, 11.0% 3.3px, 14.1% 2.9px, 17.2% 5.2px, 19.5% 3.5px, 21.8% 1.8px, 23.8% 2.4px, 25.9% 0.6px, 27.7% 0.9px, 29.6% 3px, 31.4% 1.7px, 34.0% 3.2px, 35.8% 3.7px, 38.4% 0.7px, 40.8% 4.4px, 43.9% 2.3px, 45.8% 8.9px, 48.4% 2.8px, 51.2% 6.6px, 53.2% 6.8px, 56.0% 3.6px, 59.1% 1.2px, 61.5% 6.9px, 64.4% 2.2px, 66.9% 8.8px, 69.5% 4.1px, 71.8% 6.7px, 74.1% 1.3px, 76.4% 3.3px, 78.0% 0.4px, 80.2% 0px, 82.8% 6.2px, 85.8% 1.6px, 88.2% 3.1px, 91.4% 1.8px, 93.5% 1.2px, 96.4% 1.4px, 99.5% 0.4px, calc(100% - 4.6px) 3.0%, calc(100% - 9.1px) 12.0%, calc(100% - 0.7px) 20.8%, calc(100% - 7px) 28.8%, calc(100% - 4.9px) 34.1%, calc(100% - 7.6px) 39.1%, calc(100% - 2.4px) 48.1%, calc(100% - 4.9px) 53.4%, calc(100% - 8.2px) 62.6%, calc(100% - 1.2px) 68.1%, calc(100% - 1.2px) 74.3%, calc(100% - 0.7px) 82.9%, calc(100% - 6.5px) 89.2%, calc(100% - 4px) 98.0%, 100.0% calc(100% - 5.4px), 97.8% calc(100% - 8.7px), 95.7% calc(100% - 0.4px), 92.6% calc(100% - 4.8px), 89.6% calc(100% - 2.3px), 87.6% calc(100% - 2.1px), 84.9% calc(100% - 0.2px), 82.7% calc(100% - 4.3px), 79.8% calc(100% - 3.7px), 77.0% calc(100% - 0.7px), 74.6% calc(100% - 7.3px), 71.8% calc(100% - 7.6px), 68.6% calc(100% - 2px), 66.5% calc(100% - 2.4px), 64.2% calc(100% - 8.2px), 61.7% calc(100% - 8.2px), 59.4% calc(100% - 2px), 56.9% calc(100% - 2.7px), 54.1% calc(100% - 1.4px), 52.5% calc(100% - 6px), 50.2% calc(100% - 0.9px), 47.3% calc(100% - 4.7px), 45.2% calc(100% - 0.7px), 42.7% calc(100% - 7.4px), 39.5% calc(100% - 1.2px), 36.7% calc(100% - 6.4px), 33.8% calc(100% - 0.7px), 31.9% calc(100% - 1.6px), 29.4% calc(100% - 6.8px), 26.6% calc(100% - 7.6px), 25.0% calc(100% - 2.2px), 23.1% calc(100% - 2.1px), 20.7% calc(100% - 1.9px), 18.5% calc(100% - 7.7px), 15.8% calc(100% - 1.4px), 12.8% calc(100% - 2.3px), 10.8% calc(100% - 7.4px), 8.6% calc(100% - 0.9px), 6.4% calc(100% - 3.5px), 3.4% calc(100% - 7.5px), 1.1% calc(100% - 1.7px), 1.4px 97.0%, 2.8px 89.3%, 1px 84.3%, 2.3px 77.1%, 5px 67.3%, 7.5px 60.9%, 0.5px 54.0%, 1px 44.5%, 4.8px 36.0%, 1.2px 28.0%, 1.5px 22.9%, 6px 15.7%, 3px 9.3%);
+    background-color: var(--scribble-tint);
+    background-image: repeating-linear-gradient(
+        -45deg,
+        var(--scribble-line-a) 0,
+        var(--scribble-line-a) 1px,
+        transparent 1px,
+        transparent 4px
+      ),
+      repeating-linear-gradient(
+        -46.5deg,
+        var(--scribble-line-b) 0,
+        var(--scribble-line-b) 1px,
+        transparent 1px,
+        transparent 6px
+      ),
+      repeating-linear-gradient(
+        -42.5deg,
+        var(--scribble-line-c) 0,
+        var(--scribble-line-c) 1px,
+        transparent 1px,
+        transparent 10px
+      );
+    /* A 45deg mask sweeps the hatch in — the direction a right-handed pen
+       travels — so the strokes fade up along the stroke axis instead of
+       appearing behind a hard edge.
+       Geometry: the mask is 3x the button, so the button covers 33% of it.
+       The stops keep the whole button clear of the fade at both extremes —
+       fully transparent at 0% (nothing showing), fully opaque at 100%
+       (completely filled) — with the 36–64% fade band sweeping across in
+       between. */
+    /* scribble-mask: regenerate with website/scripts/gen-scribble-edge.mjs */
+    -webkit-mask-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%202500%20100%22%20preserveAspectRatio%3D%22none%22%3E%3Cdefs%3E%3CclipPath%20id%3D%22cell%22%3E%3Crect%20x%3D%220%22%20y%3D%220%22%20width%3D%22100%22%20height%3D%22100%22%2F%3E%3C%2FclipPath%3E%3Cfilter%20id%3D%22s%22%20x%3D%22-30%25%22%20y%3D%22-30%25%22%20width%3D%22160%25%22%20height%3D%22160%25%22%3E%3CfeGaussianBlur%20stdDeviation%3D%224%22%2F%3E%3CfeComponentTransfer%3E%3CfeFuncA%20type%3D%22discrete%22%20tableValues%3D%220.00%200.25%200.50%200.75%201.00%22%2F%3E%3C%2FfeComponentTransfer%3E%3C%2Ffilter%3E%3C%2Fdefs%3E%3Cg%20transform%3D%22translate(0%2C0)%22%20clip-path%3D%22url(%23cell)%22%3E%3C%2Fg%3E%3Cg%20transform%3D%22translate(100%2C0)%22%20clip-path%3D%22url(%23cell)%22%3E%3Cg%20filter%3D%22url(%23s)%22%3E%3Cpolyline%20points%3D%22-17.5%2C110%20-11.2%2C70.1%22%20fill%3D%22none%22%20stroke%3D%22%23fff%22%20stroke-width%3D%2232%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fg%3E%3C%2Fg%3E%3Cg%20transform%3D%22translate(200%2C0)%22%20clip-path%3D%22url(%23cell)%22%3E%3Cg%20filter%3D%22url(%23s)%22%3E%3Cpolyline%20points%3D%22-17.5%2C110%20-4.8%2C30.2%22%20fill%3D%22none%22%20stroke%3D%22%23fff%22%20stroke-width%3D%2232%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fg%3E%3C%2Fg%3E%3Cg%20transform%3D%22translate(300%2C0)%22%20clip-path%3D%22url(%23cell)%22%3E%3Cg%20filter%3D%22url(%23s)%22%3E%3Cpolyline%20points%3D%22-17.5%2C110%201.5%2C-9.7%22%20fill%3D%22none%22%20stroke%3D%22%23fff%22%20stroke-width%3D%2232%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fg%3E%3C%2Fg%3E%3Cg%20transform%3D%22translate(400%2C0)%22%20clip-path%3D%22url(%23cell)%22%3E%3Cg%20filter%3D%22url(%23s)%22%3E%3Cpolyline%20points%3D%22-17.5%2C110%201.6%2C-10%207.4%2C29.6%22%20fill%3D%22none%22%20stroke%3D%22%23fff%22%20stroke-width%3D%2232%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fg%3E%3C%2Fg%3E%3Cg%20transform%3D%22translate(500%2C0)%22%20clip-path%3D%22url(%23cell)%22%3E%3Cg%20filter%3D%22url(%23s)%22%3E%3Cpolyline%20points%3D%22-17.5%2C110%201.6%2C-10%2013.3%2C69.6%22%20fill%3D%22none%22%20stroke%3D%22%23fff%22%20stroke-width%3D%2232%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fg%3E%3C%2Fg%3E%3Cg%20transform%3D%22translate(600%2C0)%22%20clip-path%3D%22url(%23cell)%22%3E%3Cg%20filter%3D%22url(%23s)%22%3E%3Cpolyline%20points%3D%22-17.5%2C110%201.6%2C-10%2019.1%2C109.6%22%20fill%3D%22none%22%20stroke%3D%22%23fff%22%20stroke-width%3D%2232%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fg%3E%3C%2Fg%3E%3Cg%20transform%3D%22translate(700%2C0)%22%20clip-path%3D%22url(%23cell)%22%3E%3Cg%20filter%3D%22url(%23s)%22%3E%3Cpolyline%20points%3D%22-17.5%2C110%201.6%2C-10%2019.2%2C110%2024.2%2C70.3%22%20fill%3D%22none%22%20stroke%3D%22%23fff%22%20stroke-width%3D%2232%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fg%3E%3C%2Fg%3E%3Cg%20transform%3D%22translate(800%2C0)%22%20clip-path%3D%22url(%23cell)%22%3E%3Cg%20filter%3D%22url(%23s)%22%3E%3Cpolyline%20points%3D%22-17.5%2C110%201.6%2C-10%2019.2%2C110%2029.2%2C30.3%22%20fill%3D%22none%22%20stroke%3D%22%23fff%22%20stroke-width%3D%2232%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fg%3E%3C%2Fg%3E%3Cg%20transform%3D%22translate(900%2C0)%22%20clip-path%3D%22url(%23cell)%22%3E%3Cg%20filter%3D%22url(%23s)%22%3E%3Cpolyline%20points%3D%22-17.5%2C110%201.6%2C-10%2019.2%2C110%2034.3%2C-9.8%22%20fill%3D%22none%22%20stroke%3D%22%23fff%22%20stroke-width%3D%2232%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fg%3E%3C%2Fg%3E%3Cg%20transform%3D%22translate(1000%2C0)%22%20clip-path%3D%22url(%23cell)%22%3E%3Cg%20filter%3D%22url(%23s)%22%3E%3Cpolyline%20points%3D%22-17.5%2C110%201.6%2C-10%2019.2%2C110%2034.3%2C-10%2040.1%2C29.8%22%20fill%3D%22none%22%20stroke%3D%22%23fff%22%20stroke-width%3D%2232%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fg%3E%3C%2Fg%3E%3Cg%20transform%3D%22translate(1100%2C0)%22%20clip-path%3D%22url(%23cell)%22%3E%3Cg%20filter%3D%22url(%23s)%22%3E%3Cpolyline%20points%3D%22-17.5%2C110%201.6%2C-10%2019.2%2C110%2034.3%2C-10%2045.9%2C69.8%22%20fill%3D%22none%22%20stroke%3D%22%23fff%22%20stroke-width%3D%2232%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fg%3E%3C%2Fg%3E%3Cg%20transform%3D%22translate(1200%2C0)%22%20clip-path%3D%22url(%23cell)%22%3E%3Cg%20filter%3D%22url(%23s)%22%3E%3Cpolyline%20points%3D%22-17.5%2C110%201.6%2C-10%2019.2%2C110%2034.3%2C-10%2051.8%2C109.7%22%20fill%3D%22none%22%20stroke%3D%22%23fff%22%20stroke-width%3D%2232%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fg%3E%3C%2Fg%3E%3Cg%20transform%3D%22translate(1300%2C0)%22%20clip-path%3D%22url(%23cell)%22%3E%3Cg%20filter%3D%22url(%23s)%22%3E%3Cpolyline%20points%3D%22-17.5%2C110%201.6%2C-10%2019.2%2C110%2034.3%2C-10%2051.8%2C110%2057%2C70.2%22%20fill%3D%22none%22%20stroke%3D%22%23fff%22%20stroke-width%3D%2232%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fg%3E%3C%2Fg%3E%3Cg%20transform%3D%22translate(1400%2C0)%22%20clip-path%3D%22url(%23cell)%22%3E%3Cg%20filter%3D%22url(%23s)%22%3E%3Cpolyline%20points%3D%22-17.5%2C110%201.6%2C-10%2019.2%2C110%2034.3%2C-10%2051.8%2C110%2062.3%2C30.2%22%20fill%3D%22none%22%20stroke%3D%22%23fff%22%20stroke-width%3D%2232%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fg%3E%3C%2Fg%3E%3Cg%20transform%3D%22translate(1500%2C0)%22%20clip-path%3D%22url(%23cell)%22%3E%3Cg%20filter%3D%22url(%23s)%22%3E%3Cpolyline%20points%3D%22-17.5%2C110%201.6%2C-10%2019.2%2C110%2034.3%2C-10%2051.8%2C110%2067.6%2C-9.9%22%20fill%3D%22none%22%20stroke%3D%22%23fff%22%20stroke-width%3D%2232%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fg%3E%3C%2Fg%3E%3Cg%20transform%3D%22translate(1600%2C0)%22%20clip-path%3D%22url(%23cell)%22%3E%3Cg%20filter%3D%22url(%23s)%22%3E%3Cpolyline%20points%3D%22-17.5%2C110%201.6%2C-10%2019.2%2C110%2034.3%2C-10%2051.8%2C110%2067.6%2C-10%2072.7%2C30%22%20fill%3D%22none%22%20stroke%3D%22%23fff%22%20stroke-width%3D%2232%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fg%3E%3C%2Fg%3E%3Cg%20transform%3D%22translate(1700%2C0)%22%20clip-path%3D%22url(%23cell)%22%3E%3Cg%20filter%3D%22url(%23s)%22%3E%3Cpolyline%20points%3D%22-17.5%2C110%201.6%2C-10%2019.2%2C110%2034.3%2C-10%2051.8%2C110%2067.6%2C-10%2077.9%2C70%22%20fill%3D%22none%22%20stroke%3D%22%23fff%22%20stroke-width%3D%2232%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fg%3E%3C%2Fg%3E%3Cg%20transform%3D%22translate(1800%2C0)%22%20clip-path%3D%22url(%23cell)%22%3E%3Cg%20filter%3D%22url(%23s)%22%3E%3Cpolyline%20points%3D%22-17.5%2C110%201.6%2C-10%2019.2%2C110%2034.3%2C-10%2051.8%2C110%2067.6%2C-10%2083%2C110%2083%2C109.9%22%20fill%3D%22none%22%20stroke%3D%22%23fff%22%20stroke-width%3D%2232%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fg%3E%3C%2Fg%3E%3Cg%20transform%3D%22translate(1900%2C0)%22%20clip-path%3D%22url(%23cell)%22%3E%3Cg%20filter%3D%22url(%23s)%22%3E%3Cpolyline%20points%3D%22-17.5%2C110%201.6%2C-10%2019.2%2C110%2034.3%2C-10%2051.8%2C110%2067.6%2C-10%2083%2C110%2089%2C70%22%20fill%3D%22none%22%20stroke%3D%22%23fff%22%20stroke-width%3D%2232%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fg%3E%3C%2Fg%3E%3Cg%20transform%3D%22translate(2000%2C0)%22%20clip-path%3D%22url(%23cell)%22%3E%3Cg%20filter%3D%22url(%23s)%22%3E%3Cpolyline%20points%3D%22-17.5%2C110%201.6%2C-10%2019.2%2C110%2034.3%2C-10%2051.8%2C110%2067.6%2C-10%2083%2C110%2094.9%2C30%22%20fill%3D%22none%22%20stroke%3D%22%23fff%22%20stroke-width%3D%2232%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fg%3E%3C%2Fg%3E%3Cg%20transform%3D%22translate(2100%2C0)%22%20clip-path%3D%22url(%23cell)%22%3E%3Cg%20filter%3D%22url(%23s)%22%3E%3Cpolyline%20points%3D%22-17.5%2C110%201.6%2C-10%2019.2%2C110%2034.3%2C-10%2051.8%2C110%2067.6%2C-10%2083%2C110%20100.9%2C-10%22%20fill%3D%22none%22%20stroke%3D%22%23fff%22%20stroke-width%3D%2232%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fg%3E%3C%2Fg%3E%3Cg%20transform%3D%22translate(2200%2C0)%22%20clip-path%3D%22url(%23cell)%22%3E%3Cg%20filter%3D%22url(%23s)%22%3E%3Cpolyline%20points%3D%22-17.5%2C110%201.6%2C-10%2019.2%2C110%2034.3%2C-10%2051.8%2C110%2067.6%2C-10%2083%2C110%20100.9%2C-10%20106.4%2C30%22%20fill%3D%22none%22%20stroke%3D%22%23fff%22%20stroke-width%3D%2232%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fg%3E%3C%2Fg%3E%3Cg%20transform%3D%22translate(2300%2C0)%22%20clip-path%3D%22url(%23cell)%22%3E%3Cg%20filter%3D%22url(%23s)%22%3E%3Cpolyline%20points%3D%22-17.5%2C110%201.6%2C-10%2019.2%2C110%2034.3%2C-10%2051.8%2C110%2067.6%2C-10%2083%2C110%20100.9%2C-10%20112%2C70%22%20fill%3D%22none%22%20stroke%3D%22%23fff%22%20stroke-width%3D%2232%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fg%3E%3C%2Fg%3E%3Cg%20transform%3D%22translate(2400%2C0)%22%20clip-path%3D%22url(%23cell)%22%3E%3Cg%20filter%3D%22url(%23s)%22%3E%3Cpolyline%20points%3D%22-17.5%2C110%201.6%2C-10%2019.2%2C110%2034.3%2C-10%2051.8%2C110%2067.6%2C-10%2083%2C110%20100.9%2C-10%20117.5%2C110%22%20fill%3D%22none%22%20stroke%3D%22%23fff%22%20stroke-width%3D%2232%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fg%3E%3C%2Fg%3E%3C%2Fsvg%3E");
+    mask-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%202500%20100%22%20preserveAspectRatio%3D%22none%22%3E%3Cdefs%3E%3CclipPath%20id%3D%22cell%22%3E%3Crect%20x%3D%220%22%20y%3D%220%22%20width%3D%22100%22%20height%3D%22100%22%2F%3E%3C%2FclipPath%3E%3Cfilter%20id%3D%22s%22%20x%3D%22-30%25%22%20y%3D%22-30%25%22%20width%3D%22160%25%22%20height%3D%22160%25%22%3E%3CfeGaussianBlur%20stdDeviation%3D%224%22%2F%3E%3CfeComponentTransfer%3E%3CfeFuncA%20type%3D%22discrete%22%20tableValues%3D%220.00%200.25%200.50%200.75%201.00%22%2F%3E%3C%2FfeComponentTransfer%3E%3C%2Ffilter%3E%3C%2Fdefs%3E%3Cg%20transform%3D%22translate(0%2C0)%22%20clip-path%3D%22url(%23cell)%22%3E%3C%2Fg%3E%3Cg%20transform%3D%22translate(100%2C0)%22%20clip-path%3D%22url(%23cell)%22%3E%3Cg%20filter%3D%22url(%23s)%22%3E%3Cpolyline%20points%3D%22-17.5%2C110%20-11.2%2C70.1%22%20fill%3D%22none%22%20stroke%3D%22%23fff%22%20stroke-width%3D%2232%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fg%3E%3C%2Fg%3E%3Cg%20transform%3D%22translate(200%2C0)%22%20clip-path%3D%22url(%23cell)%22%3E%3Cg%20filter%3D%22url(%23s)%22%3E%3Cpolyline%20points%3D%22-17.5%2C110%20-4.8%2C30.2%22%20fill%3D%22none%22%20stroke%3D%22%23fff%22%20stroke-width%3D%2232%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fg%3E%3C%2Fg%3E%3Cg%20transform%3D%22translate(300%2C0)%22%20clip-path%3D%22url(%23cell)%22%3E%3Cg%20filter%3D%22url(%23s)%22%3E%3Cpolyline%20points%3D%22-17.5%2C110%201.5%2C-9.7%22%20fill%3D%22none%22%20stroke%3D%22%23fff%22%20stroke-width%3D%2232%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fg%3E%3C%2Fg%3E%3Cg%20transform%3D%22translate(400%2C0)%22%20clip-path%3D%22url(%23cell)%22%3E%3Cg%20filter%3D%22url(%23s)%22%3E%3Cpolyline%20points%3D%22-17.5%2C110%201.6%2C-10%207.4%2C29.6%22%20fill%3D%22none%22%20stroke%3D%22%23fff%22%20stroke-width%3D%2232%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fg%3E%3C%2Fg%3E%3Cg%20transform%3D%22translate(500%2C0)%22%20clip-path%3D%22url(%23cell)%22%3E%3Cg%20filter%3D%22url(%23s)%22%3E%3Cpolyline%20points%3D%22-17.5%2C110%201.6%2C-10%2013.3%2C69.6%22%20fill%3D%22none%22%20stroke%3D%22%23fff%22%20stroke-width%3D%2232%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fg%3E%3C%2Fg%3E%3Cg%20transform%3D%22translate(600%2C0)%22%20clip-path%3D%22url(%23cell)%22%3E%3Cg%20filter%3D%22url(%23s)%22%3E%3Cpolyline%20points%3D%22-17.5%2C110%201.6%2C-10%2019.1%2C109.6%22%20fill%3D%22none%22%20stroke%3D%22%23fff%22%20stroke-width%3D%2232%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fg%3E%3C%2Fg%3E%3Cg%20transform%3D%22translate(700%2C0)%22%20clip-path%3D%22url(%23cell)%22%3E%3Cg%20filter%3D%22url(%23s)%22%3E%3Cpolyline%20points%3D%22-17.5%2C110%201.6%2C-10%2019.2%2C110%2024.2%2C70.3%22%20fill%3D%22none%22%20stroke%3D%22%23fff%22%20stroke-width%3D%2232%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fg%3E%3C%2Fg%3E%3Cg%20transform%3D%22translate(800%2C0)%22%20clip-path%3D%22url(%23cell)%22%3E%3Cg%20filter%3D%22url(%23s)%22%3E%3Cpolyline%20points%3D%22-17.5%2C110%201.6%2C-10%2019.2%2C110%2029.2%2C30.3%22%20fill%3D%22none%22%20stroke%3D%22%23fff%22%20stroke-width%3D%2232%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fg%3E%3C%2Fg%3E%3Cg%20transform%3D%22translate(900%2C0)%22%20clip-path%3D%22url(%23cell)%22%3E%3Cg%20filter%3D%22url(%23s)%22%3E%3Cpolyline%20points%3D%22-17.5%2C110%201.6%2C-10%2019.2%2C110%2034.3%2C-9.8%22%20fill%3D%22none%22%20stroke%3D%22%23fff%22%20stroke-width%3D%2232%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fg%3E%3C%2Fg%3E%3Cg%20transform%3D%22translate(1000%2C0)%22%20clip-path%3D%22url(%23cell)%22%3E%3Cg%20filter%3D%22url(%23s)%22%3E%3Cpolyline%20points%3D%22-17.5%2C110%201.6%2C-10%2019.2%2C110%2034.3%2C-10%2040.1%2C29.8%22%20fill%3D%22none%22%20stroke%3D%22%23fff%22%20stroke-width%3D%2232%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fg%3E%3C%2Fg%3E%3Cg%20transform%3D%22translate(1100%2C0)%22%20clip-path%3D%22url(%23cell)%22%3E%3Cg%20filter%3D%22url(%23s)%22%3E%3Cpolyline%20points%3D%22-17.5%2C110%201.6%2C-10%2019.2%2C110%2034.3%2C-10%2045.9%2C69.8%22%20fill%3D%22none%22%20stroke%3D%22%23fff%22%20stroke-width%3D%2232%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fg%3E%3C%2Fg%3E%3Cg%20transform%3D%22translate(1200%2C0)%22%20clip-path%3D%22url(%23cell)%22%3E%3Cg%20filter%3D%22url(%23s)%22%3E%3Cpolyline%20points%3D%22-17.5%2C110%201.6%2C-10%2019.2%2C110%2034.3%2C-10%2051.8%2C109.7%22%20fill%3D%22none%22%20stroke%3D%22%23fff%22%20stroke-width%3D%2232%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fg%3E%3C%2Fg%3E%3Cg%20transform%3D%22translate(1300%2C0)%22%20clip-path%3D%22url(%23cell)%22%3E%3Cg%20filter%3D%22url(%23s)%22%3E%3Cpolyline%20points%3D%22-17.5%2C110%201.6%2C-10%2019.2%2C110%2034.3%2C-10%2051.8%2C110%2057%2C70.2%22%20fill%3D%22none%22%20stroke%3D%22%23fff%22%20stroke-width%3D%2232%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fg%3E%3C%2Fg%3E%3Cg%20transform%3D%22translate(1400%2C0)%22%20clip-path%3D%22url(%23cell)%22%3E%3Cg%20filter%3D%22url(%23s)%22%3E%3Cpolyline%20points%3D%22-17.5%2C110%201.6%2C-10%2019.2%2C110%2034.3%2C-10%2051.8%2C110%2062.3%2C30.2%22%20fill%3D%22none%22%20stroke%3D%22%23fff%22%20stroke-width%3D%2232%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fg%3E%3C%2Fg%3E%3Cg%20transform%3D%22translate(1500%2C0)%22%20clip-path%3D%22url(%23cell)%22%3E%3Cg%20filter%3D%22url(%23s)%22%3E%3Cpolyline%20points%3D%22-17.5%2C110%201.6%2C-10%2019.2%2C110%2034.3%2C-10%2051.8%2C110%2067.6%2C-9.9%22%20fill%3D%22none%22%20stroke%3D%22%23fff%22%20stroke-width%3D%2232%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fg%3E%3C%2Fg%3E%3Cg%20transform%3D%22translate(1600%2C0)%22%20clip-path%3D%22url(%23cell)%22%3E%3Cg%20filter%3D%22url(%23s)%22%3E%3Cpolyline%20points%3D%22-17.5%2C110%201.6%2C-10%2019.2%2C110%2034.3%2C-10%2051.8%2C110%2067.6%2C-10%2072.7%2C30%22%20fill%3D%22none%22%20stroke%3D%22%23fff%22%20stroke-width%3D%2232%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fg%3E%3C%2Fg%3E%3Cg%20transform%3D%22translate(1700%2C0)%22%20clip-path%3D%22url(%23cell)%22%3E%3Cg%20filter%3D%22url(%23s)%22%3E%3Cpolyline%20points%3D%22-17.5%2C110%201.6%2C-10%2019.2%2C110%2034.3%2C-10%2051.8%2C110%2067.6%2C-10%2077.9%2C70%22%20fill%3D%22none%22%20stroke%3D%22%23fff%22%20stroke-width%3D%2232%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fg%3E%3C%2Fg%3E%3Cg%20transform%3D%22translate(1800%2C0)%22%20clip-path%3D%22url(%23cell)%22%3E%3Cg%20filter%3D%22url(%23s)%22%3E%3Cpolyline%20points%3D%22-17.5%2C110%201.6%2C-10%2019.2%2C110%2034.3%2C-10%2051.8%2C110%2067.6%2C-10%2083%2C110%2083%2C109.9%22%20fill%3D%22none%22%20stroke%3D%22%23fff%22%20stroke-width%3D%2232%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fg%3E%3C%2Fg%3E%3Cg%20transform%3D%22translate(1900%2C0)%22%20clip-path%3D%22url(%23cell)%22%3E%3Cg%20filter%3D%22url(%23s)%22%3E%3Cpolyline%20points%3D%22-17.5%2C110%201.6%2C-10%2019.2%2C110%2034.3%2C-10%2051.8%2C110%2067.6%2C-10%2083%2C110%2089%2C70%22%20fill%3D%22none%22%20stroke%3D%22%23fff%22%20stroke-width%3D%2232%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fg%3E%3C%2Fg%3E%3Cg%20transform%3D%22translate(2000%2C0)%22%20clip-path%3D%22url(%23cell)%22%3E%3Cg%20filter%3D%22url(%23s)%22%3E%3Cpolyline%20points%3D%22-17.5%2C110%201.6%2C-10%2019.2%2C110%2034.3%2C-10%2051.8%2C110%2067.6%2C-10%2083%2C110%2094.9%2C30%22%20fill%3D%22none%22%20stroke%3D%22%23fff%22%20stroke-width%3D%2232%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fg%3E%3C%2Fg%3E%3Cg%20transform%3D%22translate(2100%2C0)%22%20clip-path%3D%22url(%23cell)%22%3E%3Cg%20filter%3D%22url(%23s)%22%3E%3Cpolyline%20points%3D%22-17.5%2C110%201.6%2C-10%2019.2%2C110%2034.3%2C-10%2051.8%2C110%2067.6%2C-10%2083%2C110%20100.9%2C-10%22%20fill%3D%22none%22%20stroke%3D%22%23fff%22%20stroke-width%3D%2232%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fg%3E%3C%2Fg%3E%3Cg%20transform%3D%22translate(2200%2C0)%22%20clip-path%3D%22url(%23cell)%22%3E%3Cg%20filter%3D%22url(%23s)%22%3E%3Cpolyline%20points%3D%22-17.5%2C110%201.6%2C-10%2019.2%2C110%2034.3%2C-10%2051.8%2C110%2067.6%2C-10%2083%2C110%20100.9%2C-10%20106.4%2C30%22%20fill%3D%22none%22%20stroke%3D%22%23fff%22%20stroke-width%3D%2232%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fg%3E%3C%2Fg%3E%3Cg%20transform%3D%22translate(2300%2C0)%22%20clip-path%3D%22url(%23cell)%22%3E%3Cg%20filter%3D%22url(%23s)%22%3E%3Cpolyline%20points%3D%22-17.5%2C110%201.6%2C-10%2019.2%2C110%2034.3%2C-10%2051.8%2C110%2067.6%2C-10%2083%2C110%20100.9%2C-10%20112%2C70%22%20fill%3D%22none%22%20stroke%3D%22%23fff%22%20stroke-width%3D%2232%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fg%3E%3C%2Fg%3E%3Cg%20transform%3D%22translate(2400%2C0)%22%20clip-path%3D%22url(%23cell)%22%3E%3Cg%20filter%3D%22url(%23s)%22%3E%3Cpolyline%20points%3D%22-17.5%2C110%201.6%2C-10%2019.2%2C110%2034.3%2C-10%2051.8%2C110%2067.6%2C-10%2083%2C110%20100.9%2C-10%20117.5%2C110%22%20fill%3D%22none%22%20stroke%3D%22%23fff%22%20stroke-width%3D%2232%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fg%3E%3C%2Fg%3E%3C%2Fsvg%3E");
+    /* 4x wide gives the sweep room; 2x tall gives the scribble somewhere to
+       travel vertically — with a mask the same height as the button, Y has
+       no range and the motion can only ever be a flat wipe. */
+    -webkit-mask-size: 2500% 100%;
+    mask-size: 2500% 100%;
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
+    /* Rest: frame 0 of the filmstrip — nothing inked.
+       The zigzag lives in the frames, so the motion is just a linear scrub
+       through them. That means a stepped TRANSITION suffices, and unlike a
+       keyframe animation it runs backwards on unhover — the pen un-draws,
+       and interrupting mid-stroke reverses from wherever it got to. */
+    -webkit-mask-position-x: 0%;
+    -webkit-mask-position-y: 0%;
+    mask-position: 0% 0%;
+  }
+
+  .scribble:hover > .scribble-fill,
+  .scribble:focus-visible > .scribble-fill {
+    -webkit-mask-position-x: 100%;
+    mask-position: 100% 0%;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .scribble-fill {
+      transition-duration: 1ms;
+    }
+  }
+
+  .tok-kw { color: var(--tok-kw); }
+  .tok-str { color: var(--tok-str); }
+  .tok-tag { color: var(--tok-tag); }
+  .tok-com { color: var(--tok-com); font-style: italic; }
+
+  /* Inline links get a single scribbled stroke instead of an underline.
+     One stroke drawn strictly left to right is monotonic, so a plain scaleX
+     reveal is valid at every point — no filmstrip, and interrupting it
+     mid-draw can't land between frames the way the buttons could. */
+  /* Inline links are underlined by a single stroke that draws itself.
+     stroke-dashoffset walks from the path's length to zero, so the line
+     appears end to end at true size — and because it is monotonic, breaking
+     off mid-draw simply reverses from wherever it reached. */
+  .ink-link {
+    position: relative;
+    white-space: nowrap;
+  }
+
+  .ink-link-stroke {
+    position: absolute;
+    left: -0.14em;
+    right: -0.14em;
+    bottom: -0.3em;
+    width: calc(100% + 0.28em);
+    height: 0.5em;
+    overflow: visible;
+    pointer-events: none;
+  }
+
+  .ink-link-stroke polyline {
+    stroke-dasharray: var(--stroke-len);
+    stroke-dashoffset: var(--stroke-len);
+    transition: stroke-dashoffset 340ms cubic-bezier(0.3, 0.7, 0.4, 1);
+  }
+
+  .ink-link:hover .ink-link-stroke polyline,
+  .ink-link:focus-visible .ink-link-stroke polyline,
+  /* The docs page you are on stays underlined — the same stroke, left drawn. */
+  .ink-link[aria-current='page'] .ink-link-stroke polyline {
+    stroke-dashoffset: 0;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .ink-link-stroke polyline {
+      transition-duration: 1ms;
+    }
+  }
+
+  /* Book-style drop cap on the article lede. */
+  .drop-cap::first-letter {
+    float: left;
+    font-family: var(--font-display);
+    font-size: 76px;
+    line-height: 72px;
+    padding-right: 12px;
+    margin-top: 2px;
+    color: var(--color-ink);
+  }
+}
+

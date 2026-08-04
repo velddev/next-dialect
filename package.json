@@ -1,0 +1,30 @@
+{
+  "name": "next-dialect-monorepo",
+  "private": true,
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/velddev/next-dialect.git"
+  },
+  "workspaces": [
+    "packages/*",
+    "examples/*",
+    "website"
+  ],
+  "scripts": {
+    "build": "npm run build -w example-app",
+    "serve": "npm run serve -w example-app",
+    "dev": "npm run dev -w example-app",
+    "test": "npm run test:unit && npm run test:example",
+    "test:unit": "npm test -w next-dialect",
+    "test:example": "npm test -w example-app",
+    "website": "npm run dev -w website",
+    "website:build": "npm run build -w website"
+  },
+  "dependencies": {
+    "@babel/runtime": "^7.29.7"
+  },
+  "devDependencies": {
+    "playwright": "^1.62.1"
+  }
+}

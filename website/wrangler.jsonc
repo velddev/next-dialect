@@ -1,0 +1,29 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "next-dialect-website",
+  "compatibility_date": "2026-08-01",
+
+  // An assets-only Worker: there is no `main`, because the site is a Next
+  // static export and nothing has to run per request. Cloudflare serves the
+  // files from its edge directly.
+  //
+  // `out/` is produced by `npm run build` in this workspace and is gitignored,
+  // so a deploy is always build-then-ship, never ship-whatever-is-on-disk.
+  "assets": {
+    "directory": "./out",
+    // Next's export writes 404.html; serve it for anything unmatched rather
+    // than Cloudflare's own error page.
+    "not_found_handling": "404-page"
+    // html_handling is left at its default, auto-trailing-slash: the export
+    // writes docs.html and docs/api.html, and that setting is what makes
+    // /docs and /docs/api resolve to them.
+  },
+
+  // Deploying provisions the custom domain and its certificate, as long as the
+  // zone lives in the same Cloudflare account (Veld Technologies).
+  "routes": [{ "pattern": "next-dialect.com", "custom_domain": true }]
+
+  // account_id is deliberately absent: it is an account identifier in a public
+  // repository, and it is only needed when the credential can see more than
+  // one account. CI passes it as CLOUDFLARE_ACCOUNT_ID instead.
+}

@@ -1,0 +1,132 @@
+import { pageMeta } from '../../seo'
+
+export const metadata = pageMeta({
+  title: 'Configuration | Dialect',
+  description:
+    'Every option withDialect accepts, what it publishes to the rest of the toolchain, and how the catalogs on disk are read.',
+  path: '/docs/configuration',
+})
+
+# Configuration
+
+Everything is configured in one call in `next.config`. There is no second
+config file, no plugin registry and no per-route setup.
+
+```js
+// next.config.mjs
+import { withDialect } from 'next-dialect/config'
+
+export default withDialect(nextConfig, {
+  locales: ['en', 'nl'],
+  defaultLocale: 'en',
+  messages: './messages',
+  localePrefix: 'always',
+  localeParam: 'locale',
+  compiler: 'loader',
+  detection: { cookie: 'DIALECT_LOCALE', acceptLanguage: true },
+})
+```
+
+## Options
+
+| Option | Default | Meaning |
+| --- | --- | --- |
+| `locales` | — | Required. The locales you ship. Each one needs a `<locale>.json` in the messages directory. |
+| `defaultLocale` | first of `locales` | The catalog other locales fall back to, and the locale that un-prefixed URLs resolve to when nothing better is known. |
+| `messages` | `'./messages'` | Directory of JSON catalogs, resolved against the project root. |
+| `localePrefix` | `'always'` | `'always'` puts every locale in the path. `'as-needed'` serves the default locale at canonical un-prefixed URLs and redirects the prefixed form to it. |
+| `localeParam` | `'locale'` | The dynamic segment name. Change it and the compiler looks for `app/[lang]/…` instead. |
+| `compiler` | `'loader'` | Which front-end runs the transform. See below. |
+| `detection.cookie` | `'DIALECT_LOCALE'` | Cookie that remembers the visitor's locale. Also how the proxy resolves lazily loaded chunks. |
+| `detection.acceptLanguage` | `true` | Whether to fall back to the `Accept-Language` header when no cookie is set. |
+
+A missing `locales` throws immediately, because every later stage depends on
+it.
+
+## Choosing a compiler front-end
+
+`'loader'` is the default and the one to use. It runs as a pre-loader on your
+own source only, which leaves Next compiling with SWC — builds stay fast and
+Turbopack stays reachable. Files that never mention `next-dialect` are passed
+through untouched, so the extra parse lands on a handful of modules.
+
+`'babel'` exports the same transform as a Babel plugin, for projects that
+already run Babel for other reasons. Adding a `.babelrc` switches the whole app
+off SWC, which is a real cost — take this path only if you were paying it
+anyway.
+
+Both front-ends share one transform, so the output is identical either way.
+
+## Messages on disk
+
+One file per locale, named after it:
+
+```
+messages/
+  en.json
+  nl.json
+```
+
+Nested objects flatten to dot-separated keys, so this:
+
+```json
+{ "home": { "title": "Hello" } }
+```
+
+is the key `home.title`. Values are read as strings.
+
+Two rules are enforced while loading:
+
+- **Fallbacks resolve at build time.** A key present in the default locale but
+  missing from `nl.json` is filled in from the default locale before anything
+  is compiled, and the build prints how many keys fell back and the first few
+  of them. Nothing walks a fallback chain at runtime.
+- **The sentinel is reserved.** The compiler marks message positions with
+  `U+0001`. A catalog containing that character — raw, or spelled `\u0001` or
+  `\x01` — fails the build instead of silently corrupting a bundle.
+
+## What withDialect publishes
+
+The options have to reach four different processes: the webpack loader, the
+server runtime, the bundle proxy and the CLI. They travel as environment
+variables, set when the config is evaluated:
+
+| Variable | From |
+| --- | --- |
+| `DIALECT_MESSAGES` | `messages`, resolved to an absolute path |
+| `DIALECT_DEFAULT` | `defaultLocale` |
+| `DIALECT_LOCALES` | `locales`, comma-separated |
+| `DIALECT_PARAM` | `localeParam` |
+| `DIALECT_PREFIX` | `localePrefix` |
+| `DIALECT_COOKIE` | `detection.cookie` |
+
+The returned config also adds `next-dialect` to `transpilePackages`, and
+carries the resolved settings on a non-enumerable `__dialect` property that the
+CLI reads back — non-enumerable so Next's own config validation does not warn
+about an unknown key.
+
+## Static export or server
+
+The same configuration covers both; the difference is Next's own `output`.
+
+```js
+export default withDialect({ output: 'export' }, { locales: ['en', 'nl'] })
+```
+
+With `output: 'export'`, `next-dialect build` forks the export into a complete
+site per locale under `dist/<locale>/`. A static host has no request-time hook,
+so every asset is duplicated and asset URLs are prefixed wholesale.
+
+Without it, the chunks stay as built and `next-dialect start` rewrites the
+localized ones per request through the [bundle proxy](/docs/proxy). Two
+environment variables matter at that point: `PORT` (default 3000) and
+`DIALECT_PREFIX_OVERRIDE`, which forces a prefix mode for one run without
+touching the config — useful for testing both modes against a single build.
+
+## Source maps
+
+Message substitution changes string lengths after the bundle and its map were
+generated, so a client source map no longer lines up for any chunk that
+contains messages. Next disables browser source maps in production by default,
+which makes this inert; if you set `productionBrowserSourceMaps: true`,
+`withDialect` warns and the drift is real.
