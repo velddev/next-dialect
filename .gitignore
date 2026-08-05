@@ -29,6 +29,13 @@ benchmarks/*/components/
 benchmarks/*/messages/
 benchmarks/paraglide/paraglide/
 benchmarks/paraglide/project.inlang/
+# Scratch output of the last single run. The numbers the README quotes live in
+# results-1x/10x/100x.json, which stay tracked; this one is whatever ran last,
+# so a benchmark run should not dirty the tree.
+benchmarks/harness/results.json
+# --out from a comparison run
+benchmarks/harness/ci/
+bench-comment.md
 
 # local
 .env

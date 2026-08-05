@@ -58,6 +58,7 @@ Three layers, and they check genuinely different things:
   rendered the same thing.
 
 CI runs all three on every pull request.
+CI runs all of them on every pull request.
 
 ## Working on the compiler
 
@@ -85,11 +86,37 @@ target's dependencies, then:
 ```bash
 node benchmarks/shared/gen-messages.mjs      # regenerate the catalogs
 node benchmarks/harness/run.mjs              # measure every target
+node benchmarks/harness/run-scales.mjs       # …at 1x, 10x and 100x
 ```
 
 If you add a library, it has to render the same visible text from the same
 catalog with the same server/client split — otherwise the numbers are not
 comparable, which is the only thing the suite is for.
+
+### The pull-request check
+
+A PR touching `packages/next-dialect/**` or `benchmarks/**` gets its transfer
+sizes measured and compared against the branch it merges into, and the
+comparison posted as a comment. It builds only `baseline` and `next-dialect`,
+at all three scales — a change here cannot move next-intl or Paraglide, so
+building them would triple the runtime to compare two numbers against
+themselves. The full field stays a manual run.
+
+Both sides are measured on the same runner in the same job. Comparing against
+the committed `results-*x.json` would be cheaper and wrong: those were recorded
+on other hardware, with whichever Next version was current.
+
+Only sizes fail the build. They come from CDP `encodedDataLength` and are
+deterministic for a given build, so a change in them is a real change. Build
+and script times sit in the same results file and swing by tens of percent on a
+shared runner — they are reported for context and never gated.
+
+To reproduce what CI does:
+
+```bash
+node benchmarks/harness/run-scales.mjs --only baseline,next-dialect --out benchmarks/harness/ci
+node benchmarks/harness/compare.mjs --base <other-checkout>/benchmarks/harness/ci --head benchmarks/harness/ci
+```
 
 ## Pull requests
 
