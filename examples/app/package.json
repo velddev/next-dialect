@@ -8,8 +8,9 @@
     "serve": "node scripts/serve.mjs",
     "build:ssr": "cross-env DIALECT_SSR=1 next-dialect build",
     "start:ssr": "cross-env DIALECT_SSR=1 next-dialect start",
-    "test": "npm run build && npm run build:ssr && node tests/run.mjs && playwright test",
-    "test:only": "node tests/run.mjs",
+    "test": "npm run build && npm run build:ssr && node tests/run.mjs && node tests/proxy.mjs && playwright test",
+    "test:http": "node tests/run.mjs",
+    "test:proxy": "node tests/proxy.mjs",
     "test:e2e": "playwright test"
   },
   "dependencies": {

@@ -37,12 +37,23 @@ npm run website          # the docs site at http://localhost:3300/
 ## Tests
 
 ```bash
-npm test                 # everything
-npm run test:unit        # compiler unit tests only — fast
-npm run test:example     # both builds, then the HTTP and Playwright layers
+npm test
 ```
 
-Three layers, and they check genuinely different things:
+That is the whole suite, and it is what CI runs: unit tests, both example builds,
+the HTTP, proxy and Playwright layers, and a website build. It takes a few
+minutes, mostly in the two Next builds. Playwright needs its browser once:
+
+```bash
+npx playwright install chromium
+```
+
+The pieces exist separately for iteration, not because you should have to
+remember them — `npm run test:unit` is a tenth of a second, and the three layers
+under `examples/app` (`test:http`, `test:proxy`, `test:e2e`) run against a build
+you already have rather than making a new one.
+
+Four layers, and they check genuinely different things:
 
 - **`packages/next-dialect/test`** — the pieces a full build hides: escaping in
   all three JS string contexts, token substitution and its escaped spellings,
@@ -52,12 +63,16 @@ Three layers, and they check genuinely different things:
   live flows: per-locale inlining, per-bundle isolation including lazy chunks,
   the no-global-catalog guarantee, token-leak scans, `force-dynamic`, ISR,
   locale negotiation and the proxy's selective prefixing.
+- **`examples/app/tests/proxy.mjs`** — the `next-dialect/proxy` handler, driven
+  in-process against the real SSR build: cookie-resolved chunks, pass-through
+  for chunks with no messages, cache headers, and every negotiation branch in
+  both prefix modes. In-process because exercising it over HTTP would need a
+  Next 16 runtime.
 - **`examples/app/tests/e2e`** — Playwright, against both servers. Every test
   fails on any browser console error, which is the hydration-mismatch
   tripwire — so a passing e2e run is also a statement that server and client
   rendered the same thing.
 
-CI runs all three on every pull request.
 CI runs all of them on every pull request.
 
 ## Working on the compiler

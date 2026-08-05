@@ -1,6 +1,6 @@
 {
   "name": "next-dialect",
-  "version": "0.2.0",
+  "version": "0.1.0",
   "description": "Zero-overhead i18n for Next.js: messages compile to constants inside the chunks that use them. No client catalog, no runtime lookups, no fallback chains.",
   "keywords": [
     "nextjs",
@@ -58,7 +58,8 @@
     "./rich": "./src/runtime/rich.js",
     "./babel": "./src/babel-plugin.cjs",
     "./loader": "./src/loader.cjs",
-    "./proxy": "./src/proxy.mjs",
+    "./proxy": "./src/next-proxy.mjs",
+    "./bundle-proxy": "./src/proxy.mjs",
     "./postbuild": "./src/postbuild.mjs",
     "./server": "./src/server.mjs"
   },

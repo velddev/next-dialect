@@ -31,7 +31,7 @@ runtime, so hot reload keeps working while you edit a catalog.
   "scripts": {
     "dev": "next dev",
     "build": "next-dialect build",
-    "start": "next-dialect start"
+    "start": "next start"
   }
 }
 ```
@@ -174,13 +174,27 @@ site per locale:
 next-dialect build      # -> dist/en/, dist/nl/
 ```
 
-For a server deployment, leave `output` alone and start the dialect server. It
-is Next plus the [bundle proxy](/docs/proxy) in one process: chunks are
-rewritten per request, and only the ones that actually contain strings are
-locale-specific.
+For a server deployment, leave `output` alone and mount the
+[proxy](/docs/proxy) in `proxy.ts` at your project root. Chunks are then
+rewritten per request — only the ones that actually contain strings — and
+`next build` and `next start` stay exactly as they were.
+
+```ts
+// proxy.ts
+import { createDialectProxy } from 'next-dialect/proxy'
+
+export const proxy = createDialectProxy()
+
+export const config = {
+  matcher: '/((?!_next/image|favicon.ico).*)',
+}
+```
+
+That needs the Node.js runtime, which proxy files use by default in Next 16; on
+15.5 or newer the same code works as `middleware.ts`.
 
 ```bash
-next-dialect build && next-dialect start
+next build && next start
 ```
 
 ## The example app
