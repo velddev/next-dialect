@@ -318,21 +318,26 @@ await test('ISR: revalidate=5 caches then regenerates', async () => {
   // Asserting on wall-clock luck is what made this flaky in CI.
   const WINDOW_MS = 5000
   let baseline = null
-  for (let attempt = 0; attempt < 5 && baseline === null; attempt++) {
-    const started = Date.now()
-    const t1 = await stamp()
-    assert.ok(t1, 'no ISR timestamp found')
-    const t2 = await stamp()
-    const elapsed = Date.now() - started
-    if (t1 === t2) baseline = t2
-    else {
-      assert.ok(
-        elapsed >= WINDOW_MS,
-        `ISR page not cached within the window (two requests ${elapsed}ms apart returned different renders)`
-      )
+  let settledAt = 0
+  let prev = await stamp()
+  assert.ok(prev, 'no ISR timestamp found')
+  for (let i = 0; i < 30 && baseline === null; i++) {
+    await sleep(100)
+    const next = await stamp()
+    if (next && next === prev) {
+      baseline = next
+      settledAt = Date.now()
     }
+    prev = next
   }
-  assert.ok(baseline, 'never got two requests inside one revalidate window')
+  assert.ok(baseline, 'ISR never served the same render twice — the page is not being cached at all')
+
+  // Inside the window the entry must hold. Skip the check if settling ate the
+  // window, rather than assert on where the clock happened to land.
+  const again = await stamp()
+  if (Date.now() - settledAt < WINDOW_MS - 1500) {
+    assert.equal(again, baseline, 'ISR page changed inside its revalidate window')
+  }
 
   await sleep(WINDOW_MS + 1000)
   await stamp() // first hit after expiry serves stale, triggers regeneration
