@@ -49,7 +49,7 @@ export default withDialect(nextConfig, {
 })
 ```
 
-…and two commands: `next-dialect build`, `next-dialect start`.
+…and one build command, `next-dialect build`.
 
 ## How it works
 
@@ -60,17 +60,29 @@ export default withDialect(nextConfig, {
 2. **ICU.** Full MessageFormat — plurals with `offset:`, ordinals, selects,
    number/date skeletons, and tags for rich text. The parser runs at build time
    only; the browser gets a compact AST and a small walker over native `Intl`.
-3. **Serve.** On a server, the bundle proxy rewrites only the chunks that
-   actually contain messages, per request — framework and vendor chunks keep
-   one shared URL for every locale. On a static host, the build forks the
-   export into one complete site per locale.
+3. **Serve.** On a server, mount `next-dialect/proxy` in a `proxy.ts` and keep
+   plain `next build` / `next start`; it rewrites only the chunks that actually
+   contain messages, per request, while framework and vendor chunks keep one
+   shared URL for every locale. On a static host, the build forks the export
+   into one complete site per locale instead.
+
+```ts
+// proxy.ts
+import { createDialectProxy } from 'next-dialect/proxy'
+
+export const proxy = createDialectProxy()
+
+export const config = {
+  matcher: '/((?!_next/image|favicon.ico).*)',
+}
+```
 
 Dev mode skips compilation entirely: runtime lookup with HMR, same evaluator.
 
 ## Documentation
 
 Full docs — getting started, API, configuration, compiler architecture and the
-bundle proxy — live in
+proxy — live in
 [the repository](https://github.com/velddev/next-dialect#readme).
 
 ## License

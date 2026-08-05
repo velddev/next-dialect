@@ -10,7 +10,7 @@ Zero-overhead i18n for Next.js: localized strings are compiled to **constants in
 npm install next-dialect
 ```
 
-Full documentation — getting started, API, configuration, compiler architecture and the bundle proxy — lives in [website/app/docs](website/app/docs), and is served at `/docs`.
+Full documentation — getting started, API, configuration, compiler architecture and the proxy — lives in [website/app/docs](website/app/docs), and is served at `/docs`.
 
 ## The entire API
 
@@ -50,7 +50,15 @@ export default withDialect(nextConfig, {
 })
 ```
 
-Plus a two-command CLI: `next-dialect build`, `next-dialect start`. There is no provider, no `useT`, no `getT(locale)` — the compiler binds the locale from the `[locale]` segment automatically.
+Plus one build command, `next-dialect build`, and a three-line `proxy.ts` that mounts `next-dialect/proxy`. There is no provider, no `useT`, no `getT(locale)` — the compiler binds the locale from the `[locale]` segment automatically.
+
+```ts
+// proxy.ts
+import { createDialectProxy } from 'next-dialect/proxy'
+
+export const proxy = createDialectProxy()
+export const config = { matcher: '/((?!_next/image|favicon.ico).*)' }
+```
 
 ## How it works
 
@@ -70,7 +78,7 @@ Plus a two-command CLI: `next-dialect build`, `next-dialect start`. There is no 
 2. **ICU.** Full MessageFormat — plurals with `offset:`, ordinals, selects, number/date skeletons, and tags for rich text. The formatjs parser runs at build time only; the browser gets a compact AST and a ~70-line walker over native `Intl`.
 
 3. **Serve.**
-   - **Server deployments** (`next-dialect start`): the [bundle proxy](packages/next-dialect/src/proxy.mjs) scans the build once, finds the chunks that actually contain message tokens, and rewrites *only those* per request (cached). Framework and vendor chunks keep a single shared URL and a single cache entry for every locale, so switching language re-downloads kilobytes rather than the whole app. HTML is rewritten as it streams, so Suspense and PPR keep working.
+   - **Server deployments**: mount [`next-dialect/proxy`](packages/next-dialect/src/next-proxy.mjs) in a `proxy.ts` and keep plain `next build` / `next start`. It finds the chunks that actually contain message tokens and rewrites *only those* per request (cached, raw and gzipped); framework and vendor chunks keep a single shared URL and a single cache entry for every locale, so switching language re-downloads kilobytes rather than the whole app. Needs the Node runtime — Next 16, or 15.5 as `middleware.ts`.
    - **Static export**: no request-time hook exists, so `next-dialect build` forks the export into one complete site per locale under `dist/<locale>/`.
    - Both paths negotiate un-prefixed URLs (sticky cookie → `Accept-Language` → default) and support `localePrefix: 'as-needed'`.
 
@@ -78,7 +86,7 @@ Dev mode skips compilation entirely: runtime lookup with HMR, same evaluator.
 
 ## Repo layout
 
-- [packages/next-dialect](packages/next-dialect) — compiler (`src/compiler/`), runtimes, bundle proxy, server, CLI
+- [packages/next-dialect](packages/next-dialect) — compiler (`src/compiler/`), runtimes, the proxy, CLI
 - [examples/app](examples/app) — App Router demo (en/nl) in two flows:
   - static: `npm run build` then `npm run serve` → http://localhost:4321/
   - server: `npm run build:ssr` then `npm run start:ssr` → http://localhost:3100/en

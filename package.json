@@ -15,9 +15,10 @@
     "build": "npm run build -w example-app",
     "serve": "npm run serve -w example-app",
     "dev": "npm run dev -w example-app",
-    "test": "npm run test:unit && npm run test:example",
+    "test": "npm run test:unit && npm run test:example && npm run test:website",
     "test:unit": "npm test -w next-dialect",
     "test:example": "npm test -w example-app",
+    "test:website": "npm run build -w website",
     "website": "npm run dev -w website",
     "website:build": "npm run build -w website"
   },

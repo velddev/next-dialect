@@ -87,9 +87,9 @@ Two rules are enforced while loading:
 
 ## What withDialect publishes
 
-The options have to reach four different processes: the webpack loader, the
-server runtime, the bundle proxy and the CLI. They travel as environment
-variables, set when the config is evaluated:
+The options have to reach four different places: the webpack loader, the server
+runtime, the proxy and the CLI. They travel as environment variables, set when
+the config is evaluated:
 
 | Variable | From |
 | --- | --- |
@@ -117,9 +117,8 @@ With `output: 'export'`, `next-dialect build` forks the export into a complete
 site per locale under `dist/<locale>/`. A static host has no request-time hook,
 so every asset is duplicated and asset URLs are prefixed wholesale.
 
-Without it, the chunks stay as built and `next-dialect start` rewrites the
-localized ones per request through the [bundle proxy](/docs/proxy). Two
-environment variables matter at that point: `PORT` (default 3000) and
+Without it, the chunks stay as built and the [proxy](/docs/proxy) rewrites the
+localized ones per request. One environment variable matters at that point:
 `DIALECT_PREFIX_OVERRIDE`, which forces a prefix mode for one run without
 touching the config — useful for testing both modes against a single build.
 

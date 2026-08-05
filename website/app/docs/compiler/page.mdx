@@ -92,7 +92,7 @@ in `U+0001` on both sides. Whatever consumes the build later replaces those
 tokens with one locale's content.
 
 Substitution has exactly one implementation, shared by the static fork and the
-[bundle proxy](/docs/proxy), and it has to survive minification: a minifier
+[proxy](/docs/proxy), and it has to survive minification: a minifier
 re-emits the control character as an escape sequence, so the matcher accepts
 the raw character and both textual spellings. Escaping is equally paranoid —
 the replacement is escaped so it stays valid inside double-quoted,

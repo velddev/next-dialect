@@ -142,12 +142,33 @@ Returns a Next config with the compiler front-end wired in and the settings
 published for every other part of the toolchain. Full option table in
 [Configuration](/docs/configuration).
 
+## createDialectProxy(options)
+
+From `next-dialect/proxy`. Returns a Next proxy handler that serves localized
+chunks and negotiates the locale, so a server deployment needs no custom
+server. Mount it in `proxy.ts` at the project root:
+
+```ts
+import { createDialectProxy } from 'next-dialect/proxy'
+
+export const proxy = createDialectProxy()
+
+export const config = {
+  matcher: '/((?!_next/image|favicon.ico).*)',
+}
+```
+
+The matcher must not exclude `_next/static` — that is where the localized
+chunks are. With no options it reads what `withDialect` published to the
+environment; pass `{ locales, defaultLocale, localePrefix, cookie,
+acceptLanguage, messages, staticDir }` to override any of it. Full details in
+[the proxy docs](/docs/proxy).
+
 ## CLI
 
 | Command | What it does |
 | --- | --- |
-| `next-dialect build` | Runs `next build`, then either forks the export into `dist/<locale>/` (when `output: 'export'`) or reports fallbacks and leaves the chunks for the server to rewrite. |
-| `next-dialect start` | Serves the build: Next plus the bundle proxy in one process, on `PORT` (default 3000). |
+| `next-dialect build` | Runs `next build`, then either forks the export into `dist/<locale>/` (when `output: 'export'`) or reports which keys fell back and leaves the chunks for the proxy to rewrite per request. |
 
 ## Server and client behaviour
 
